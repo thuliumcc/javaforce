@@ -58,11 +58,8 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
-    <copy file="../../stubs/linux64.bin" tofile="/usr/bin/${app}"/>
-    <chmod file="/usr/bin/${app}" perm="+x"/>
-    <copy file="${app}.cfg" todir="/usr/bin/"/>
-    <copy file="../../stubs/linux64.bin" tofile="/usr/bin/${app2}"/>
-    <copy file="${app2}.cfg" todir="/usr/bin/"/>
+    <elf/>
+    <elf app="${app2}/>
     <copy file="jfmusic.jar" todir="/usr/share/java"/>
     <copy file="jfmusic.desktop" todir="/usr/share/applications"/>
     <copy file="jfmusic.png" todir="/usr/share/icons/hicolor/48x48/apps"/>

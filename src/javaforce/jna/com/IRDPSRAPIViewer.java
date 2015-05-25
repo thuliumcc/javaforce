@@ -24,6 +24,9 @@ public class IRDPSRAPIViewer extends IDispatch {
   //11 = get_ApplicationFilter
   //12 = get_VirtualChannelManager
   //13 = put_SmartSizing
+  public void put_SmartSizing(boolean value) {
+    invokeInt(13, new Object[] {getPointer(), value ? 0xffff : 0});
+  }
   //14 = get_SmartSizing
   //15 = RequestControl
   //16 = put_DisconnectedText

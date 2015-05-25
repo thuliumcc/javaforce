@@ -566,7 +566,9 @@ public class WinRDPServer {
 
   public boolean stop() {
     active = false;
-    ww.postMessage();
+    synchronized(lock) {
+      if (ww != null) ww.postMessage();
+    }
     return true;
   }
 
@@ -602,9 +604,12 @@ public class WinRDPServer {
       rdpCP = null;
     }
     if (ww != null) {
-      ww.dispose();
-      ww = null;
+      synchronized(lock) {
+        ww.dispose();
+        ww = null;
+      }
     }
+    uninit();
   }
 
   public String getConnectionString() {
@@ -617,7 +622,8 @@ public class WinRDPServer {
   private String auth, group, pass;
   private int numAttend, port;
   private WinWindow ww;
-  private boolean active;
+  private volatile boolean active;
+  private Object lock = new Object();
 
   private IUnknown rdpUnknown;
   private IRDPSRAPISharingSession rdpSession;

@@ -67,18 +67,13 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
-    <copy file="../../stubs/linux64.bin" tofile="/usr/bin/${app}"/>
-    <chmod file="/usr/bin/${app}" perm="+x"/>
-    <copy file="${app}.cfg" todir="/usr/bin/"/>
+    <elf/>
 
-    <copy file="../../stubs/linux64.bin" tofile="/usr/bin/${app2}"/>
-    <copy file="${app2}.cfg" todir="/usr/bin/"/>
+    <elf app="${app2}/>
 
-    <copy file="../../stubs/linux64.bin" tofile="/usr/bin/${app3}"/>
-    <copy file="${app3}.cfg" todir="/usr/bin/"/>
+    <elf app="${app3}/>
 
-    <copy file="../../stubs/linux64.bin" tofile="/usr/bin/${app4}"/>
-    <copy file="${app4}.cfg" todir="/usr/bin/"/>
+    <elf app="${app4}/>
 
     <copy file="jfile.jar" todir="/usr/share/java"/>
     <copy file="jfile.desktop" todir="/usr/share/applications"/>

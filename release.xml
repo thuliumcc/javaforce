@@ -1,7 +1,7 @@
 <project name="javaforce-release" default="zip" basedir=".">
   <description>JavaForce release script</description>
 
-  <property name="VERSION" value="8.0.0"/>
+  <property name="VERSION" value="8.1.0"/>
   <property name="URL" value="http://javaforce.sourceforge.net"/>
   <property name="EMAIL" value="pquiring@gmail.com"/>
 
@@ -35,15 +35,14 @@
         <include name="jf/files.lst"/>
         <include name="jf/deb/*"/>
         <include name="jf/javaforce.spec"/>
-        <include name="jf/bin/*"/>
+        <include name="jf/lnxbin/*"/>
+        <include name="jf/lnxcfg/*"/>
+        <include name="jf/wincfg/*"/>
 
         <include name="jf/include/*"/>
 
         <include name="jf/stubs/*"/>
         <include name="jf/stubs/src/*"/>
-
-        <include name="jf/utils/*.xml"/>
-        <include name="jf/utils/*.cfg"/>
 
         <include name="jf/native/*"/>
         <include name="jf/native/src/*"/>

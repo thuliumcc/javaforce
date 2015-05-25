@@ -4,7 +4,7 @@ package server;
  *
  * @author pquiring
  *
- * Created : Mar 15, 2014
+ * Created : Mar 15, 2015
  */
 
 import java.awt.*;
@@ -52,7 +52,7 @@ public class Server extends javax.swing.JFrame implements ActionListener {
   public void readConfig() {
     try {
       Properties p = new Properties();
-      FileInputStream fis = new FileInputStream(JF.getUserPath() + "/.jfrdp.cfg");
+      FileInputStream fis = new FileInputStream(JF.getUserPath() + "/.jfrdp-server.cfg");
       p.load(fis);
       fis.close();
       String apass = p.getProperty("adminPassword");
@@ -108,8 +108,8 @@ public class Server extends javax.swing.JFrame implements ActionListener {
       p.setProperty("adminEncodedPassword", encodePassword(adminPassword.getText()));
       p.setProperty("webEncodedPassword", encodePassword(webPassword.getText()));
       p.setProperty("rdpEncodedPassword", encodePassword(rdpPassword.getText()));
-      FileOutputStream fos = new FileOutputStream(JF.getUserPath() + "/.jfrdp.cfg");
-      p.store(fos, "#jfRDP");
+      FileOutputStream fos = new FileOutputStream(JF.getUserPath() + "/.jfrdp-server.cfg");
+      p.store(fos, "#jfRDP-server");
       fos.close();
     } catch (Exception e) {
       JFLog.log(e);

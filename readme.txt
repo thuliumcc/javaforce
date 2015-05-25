@@ -1,7 +1,7 @@
 JavaForce SDK
 =============
 
-Version 8.0.0
+Version 8.1.0
 
 What is it?
 ===========
@@ -11,7 +11,7 @@ The main library includes a VoIP stack and JNA bindings for FFMPEG, OpenGL, etc.
 
 Includes many apps built around the library such as jPhoneLite, jfVideo Createor, jfAudio, jfMusic, etc.
 
-JF is also the core library in the Java infused Linux Operating system : http://jfLinux.org
+JF is also the core library in the Java infused Linux Operating system : http://jfLinux.sourceforge.net
 
 JF is also used to create jfCraft, a Minecraft clone : http://jfcraft.sourceforge.net
 
@@ -83,7 +83,7 @@ pquiring@gmail.com
 
 http://javaforce.sourceforge.net
 
-Version 8.0.0
+Version 8.1.0
 
-Released : May 18 2015
+Released : May 23 2015
 

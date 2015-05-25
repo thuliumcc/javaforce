@@ -395,6 +395,10 @@ public class WinRDPClient {
     return true;
   }
 
+  public void setSmartSizing(boolean state) {
+    rdpViewer.put_SmartSizing(state);
+  }
+
   private boolean dispose2() {
     if (rdpOO != null) {
       rdpOO.Close(IOleObject.OLECLOSE_SAVEIFDIRTY);
@@ -415,6 +419,7 @@ public class WinRDPClient {
       ww.dispose();
       child_hwnd = null;
     }
+    uninit();
     return true;
   }
 

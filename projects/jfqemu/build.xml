@@ -49,9 +49,7 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
-    <copy file="../../stubs/linux64.bin" tofile="/usr/bin/${app}"/>
-    <chmod file="/usr/bin/${app}" perm="+x"/>
-    <copy file="${app}.cfg" todir="/usr/bin/"/>
+    <elf/>
     <copy file="jfqemu.jar" todir="/usr/share/java"/>
     <mkdir dir="/etc/jinit"/>
     <copy file="jfqemu.conf" todir="/etc/jinit"/>

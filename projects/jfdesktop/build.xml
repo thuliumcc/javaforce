@@ -44,9 +44,7 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
-    <copy file="../../stubs/linux64.bin" tofile="/usr/bin/${app}"/>
-    <chmod file="/usr/bin/${app}" perm="+x"/>
-    <copy file="${app}.cfg" todir="/usr/bin/"/>
+    <elf/>
     <copy file="jfdesktop.jar" todir="/usr/share/java"/>
     <copy file="jfdesktop-run" todir="/usr/bin"/>
     <chmod file="/usr/bin/jfdesktop-run" perm="+x"/>

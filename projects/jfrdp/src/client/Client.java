@@ -7,6 +7,7 @@ package client;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 import javax.net.ssl.*;
 
 import javaforce.*;
@@ -23,6 +24,7 @@ public class Client extends javax.swing.JFrame {
     img.load(getClass().getResourceAsStream("/jfrdp.png"));
     setIconImage(img.getImage());
     JF.centerWindow(this);
+    readConfig();
   }
 
   /**
@@ -108,6 +110,7 @@ public class Client extends javax.swing.JFrame {
   }// </editor-fold>//GEN-END:initComponents
 
   private void connectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectActionPerformed
+    writeConfig();
     connect();
   }//GEN-LAST:event_connectActionPerformed
 
@@ -172,11 +175,11 @@ public class Client extends javax.swing.JFrame {
       return;
     }
     dispose();
-    viewer = new Viewer();
+    WinRDPClient rdp = new WinRDPClient();
+    viewer = new Viewer(rdp);
     viewer.setVisible(true);
     viewer.setSize(640, 480);
     JF.centerWindow(viewer);
-    rdp = new WinRDPClient();
     rdp.create(xml, "Viewer", new String(rdpPassword.getPassword()), viewer.getCanvas());
   }
 
@@ -291,6 +294,32 @@ public class Client extends javax.swing.JFrame {
     }
   }
 
+  public void readConfig() {
+    try {
+      Properties p = new Properties();
+      FileInputStream fis = new FileInputStream(JF.getUserPath() + "/.jfrdp-client.cfg");
+      p.load(fis);
+      fis.close();
+      String lastHost = p.getProperty("lastHost");
+      if (lastHost != null) {
+        host.setText(lastHost);
+      }
+    } catch (Exception e) {
+      JFLog.log(e);
+    }
+  }
+
+  public void writeConfig() {
+    try {
+      Properties p = new Properties();
+      p.setProperty("lastHost", host.getText());
+      FileOutputStream fos = new FileOutputStream(JF.getUserPath() + "/.jfrdp-client.cfg");
+      p.store(fos, "#jfRDP-client");
+      fos.close();
+    } catch (Exception e) {
+      JFLog.log(e);
+    }
+  }
+
   private Viewer viewer;
-  private WinRDPClient rdp;
 }

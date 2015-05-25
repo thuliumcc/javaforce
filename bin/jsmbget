@@ -1,3 +1,0 @@
-#!/bin/bash
-#This is not working yet
-java -cp /usr/share/java/javaforce.jar javaforce.utils.smbget $*

@@ -1,5 +1,10 @@
 What's new...
 
+May 23/2015 : JF 8.1.0 released!
+  - Linux : .cfg files are now added to ELF executable
+  - jfRDP/0.3 released!
+    - bug fixes (actually works reliable now) and new button to enable scaled viewing
+
 May 18/2015 : JF 8.0.0 released!
   - all native executable launchers are now built in /stubs and copied+patched as needed
     - the CLASSPATH/MAINCLASS properties (*.cfg) is stored in the EXE file for Windows

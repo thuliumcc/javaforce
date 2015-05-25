@@ -1,8 +1,8 @@
 //Java Launcher Linux
 
-// version 1.4
+// version 1.5
 // supports passing command line options to java main()
-// now loads CLASSPATH and MAINCLASS from ${app}.cfg
+// now loads CLASSPATH and MAINCLASS from embedded resource file (*.cfg)
 // now globbs arguments (see ExpandStringArray())
 
 #include <stdlib.h>
@@ -47,6 +47,7 @@ char link2[MAX_PATH];
 char classpath[1024];
 char mainclass[MAX_PATH];
 char method[MAX_PATH];
+char cfgargs[1024];
 
 /* Prototypes */
 void error(char *msg);
@@ -67,12 +68,23 @@ ConvertStringArray(JNIEnv *env, char **strv, int strc)
   jarray outArray;
   jstring str;
   int i;
+  int cfgargscnt = 0;
+  int p = 0;
+
+  if (strlen(cfgargs) > 0) {
+    cfgargscnt++;
+  }
 
   cls = (*env)->FindClass(env, "java/lang/String");
-  outArray = (*env)->NewObjectArray(env, strc, cls, 0);
+  outArray = (*env)->NewObjectArray(env, strc + cfgargscnt, cls, 0);
+  for (i = 0; i < cfgargscnt; i++) {
+    str = (*env)->NewStringUTF(env, cfgargs);
+    (*env)->SetObjectArrayElement(env, outArray, p++, str);
+    (*env)->DeleteLocalRef(env, str);
+  }
   for (i = 0; i < strc; i++) {
     str = (*env)->NewStringUTF(env, *strv++);
-    (*env)->SetObjectArrayElement(env, outArray, i, str);
+    (*env)->SetObjectArrayElement(env, outArray, p++, str);
     (*env)->DeleteLocalRef(env, str);
   }
   return outArray;
@@ -187,15 +199,21 @@ char *resolvelink(char *in) {
   return link1;
 }
 
+struct Header {
+  char name[4];
+  int size;
+};
+
 int loadProperties() {
   char app[MAX_PATH];
   char *data, *ln1, *ln2;
   int sl, fs;
+  struct Header header;
 
   strcpy(method, "main");
+  cfgargs[0] = 0;
 
   strcpy(app, resolvelink("/proc/self/exe"));
-  strcat(app, ".cfg");
 
   int file = open(app, O_RDONLY);
   if (file == -1) {
@@ -203,11 +221,17 @@ int loadProperties() {
     return -1;
   }
   fs = lseek(file, 0, SEEK_END);
-  lseek(file, 0, SEEK_SET);
-  data = (char*)malloc(fs + 1);
+  lseek(file, fs-8, SEEK_SET);
+  read(file, &header, 8);
+  if (strncmp(header.name, ".cfg", 4)) {
+    error("app.cfg not found");
+    return -1;
+  }
+  lseek(file, fs - 8 - header.size, SEEK_SET);
+  data = (char*)malloc(size + 1);
   read(file, data, fs);
   close(file);
-  data[fs] = 0;
+  data[header.size] = 0;
   ln1 = data;
   classpath[0] = 0;
   mainclass[0] = 0;
@@ -230,6 +254,12 @@ int loadProperties() {
     }
     else if (strncmp(ln1, "MAINCLASS=", 10) == 0) {
       strcpy(mainclass, ln1 + 10);
+    }
+    else if (strncmp(ln1, "METHOD=", 7) == 0) {
+      strcpy(method, ln1 + 7);
+    }
+    else if (strncmp(ln1, "ARGS=", 5) == 0) {
+      strcpy(cfgargs, ln1 + 5);
     }
     ln1 = ln2;
   }

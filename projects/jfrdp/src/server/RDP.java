@@ -68,11 +68,8 @@ public class RDP implements WebHandler, WinRDPServer.RDPListener {
   }
 
   public void close() {
-    rdpPort = -1;
-    if (rdp != null) {
-      rdp.stop();
-      rdp = null;
-    }
+    System.out.println("RDP.close()");
+    disconnect();
     if (web != null) {
       web.stop();
       web = null;
@@ -80,6 +77,15 @@ public class RDP implements WebHandler, WinRDPServer.RDPListener {
     if (ss != null) {
       active = false;
       try {ss.close();} catch (Exception e) {}
+    }
+  }
+
+  public void disconnect() {
+    System.out.println("RDP.disconnect()");
+    rdpPort = -1;
+    if (rdp != null) {
+      rdp.stop();
+      rdp = null;
     }
   }
 
@@ -121,6 +127,7 @@ public class RDP implements WebHandler, WinRDPServer.RDPListener {
     }
     rdp = new WinRDPServer();
     rdp.start("Auth", "Group", rdpPass, 1, 0);  //0=port (ignored for now)
+    rdp.setListener(this);
     String txt = rdp.getConnectionString();
     txt = fixIP(txt, req.getHost());
     System.out.println("Modified ConnectionString=" + txt);
@@ -173,7 +180,7 @@ public class RDP implements WebHandler, WinRDPServer.RDPListener {
   }
 
   public void onAttendeeDisconnect() {
-    close();
+    disconnect();
   }
 
   public class Redir extends Thread {
@@ -193,6 +200,8 @@ public class RDP implements WebHandler, WinRDPServer.RDPListener {
             os.write(buf, 0, read);
           }
         }
+      } catch (SocketException e) {
+        //do nothing
       } catch (Exception e) {
         e.printStackTrace();
       }

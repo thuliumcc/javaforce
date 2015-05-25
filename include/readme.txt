@@ -1,0 +1,1 @@
+Used by stubs and native folders.

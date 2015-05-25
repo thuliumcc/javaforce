@@ -70,6 +70,19 @@
 
   <!-- Linux targets -->
 
+  <macrodef name="elf">
+    <attribute name="app" default="${app}"/>
+    <attribute name="cfgdir" default=""/>
+    <sequential>
+      <copy file="${home}/stubs/linux64.bin" tofile="/usr/bin/@{app}"/>
+      <java classpath="${home}/jars/javaforce.jar;${home}/jars/jna.jar" classname="javaforce.utils.jresmgr">
+        <arg value="/usr/bin/@{app}"/>
+        <arg value="@{cfgdir}@{app}.cfg"/>
+      </java>
+      <chmod file="/usr/bin/@{app}" perm="+x"/>
+    </sequential>
+  </macrodef>
+
   <target name="deb" depends="jar"  description="create deb package">
     <exec executable="jfdeb">
       <arg value="${app}-${version}_all.deb"/>

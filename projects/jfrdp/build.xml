@@ -6,9 +6,13 @@
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
-  <property name="version" value="0.2"/>
+  <property name="version" value="0.3"/>
 
   <import file="../../base.xml"/>
+
+  <!-- NOTE : msi32 and msi64 from base.xml will fail - use msi32/64-client/-server instead -->
+
+  <target name="msi" depends="msi32-client,msi32-server,msi64-client,msi64-server" description="build all msi packages"/>
 
   <target name="depjars">
     <jar destfile="javaforce.jar">

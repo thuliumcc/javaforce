@@ -1,6 +1,5 @@
 /usr/sbin/jflogon
-/usr/sbin/jflogon.bin
-/usr/sbin/jflogon.bin.cfg
+/usr/sbin/jflogon.sh
 /usr/sbin/jflogon-runsession
 /usr/sbin/jflogon-rundomain
 /etc/dhcp/dhclient-script

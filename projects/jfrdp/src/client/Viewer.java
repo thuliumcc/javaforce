@@ -6,14 +6,20 @@ package client;
  */
 
 import java.awt.*;
+import javaforce.JFImage;
+import javaforce.jna.WinRDPClient;
 
 public class Viewer extends javax.swing.JFrame {
 
   /**
    * Creates new form Viewer
    */
-  public Viewer() {
+  public Viewer(WinRDPClient rdp) {
+    this.rdp = rdp;
     initComponents();
+    JFImage img = new JFImage();
+    img.load(getClass().getResourceAsStream("/jfrdp.png"));
+    setIconImage(img.getImage());
   }
 
   /**
@@ -27,18 +33,38 @@ public class Viewer extends javax.swing.JFrame {
 
     jPanel1 = new javax.swing.JPanel();
     canvas = new java.awt.Canvas();
+    jToolBar1 = new javax.swing.JToolBar();
+    scale = new javax.swing.JToggleButton();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+    setTitle("jfRDP Client");
+
+    jToolBar1.setFloatable(false);
+
+    scale.setText("Scale");
+    scale.setFocusable(false);
+    scale.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    scale.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    scale.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        scaleActionPerformed(evt);
+      }
+    });
+    jToolBar1.add(scale);
 
     javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
     jPanel1.setLayout(jPanel1Layout);
     jPanel1Layout.setHorizontalGroup(
       jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addComponent(canvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+      .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
     );
     jPanel1Layout.setVerticalGroup(
       jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(canvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+      .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+        .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(canvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
 
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -55,12 +81,20 @@ public class Viewer extends javax.swing.JFrame {
     pack();
   }// </editor-fold>//GEN-END:initComponents
 
+  private void scaleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scaleActionPerformed
+    rdp.setSmartSizing(scale.isSelected());
+  }//GEN-LAST:event_scaleActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private java.awt.Canvas canvas;
   private javax.swing.JPanel jPanel1;
+  private javax.swing.JToolBar jToolBar1;
+  private javax.swing.JToggleButton scale;
   // End of variables declaration//GEN-END:variables
 
   public Canvas getCanvas() {
     return canvas;
   }
+
+  private WinRDPClient rdp;
 }

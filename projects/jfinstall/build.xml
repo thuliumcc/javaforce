@@ -45,9 +45,7 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
-    <copy file="../../stubs/linux64.bin" tofile="/usr/bin/${app}"/>
-    <chmod file="/usr/bin/${app}" perm="+x"/>
-    <copy file="${app}.cfg" todir="/usr/bin/"/>
+    <elf/>
     <copy file="jfinstall.jar" todir="/usr/share/java"/>
     <copy file="jfinstall-chroot.sh" todir="/usr/bin"/>
     <chmod file="/usr/bin/jfinstall-chroot.sh" perm="+x"/>

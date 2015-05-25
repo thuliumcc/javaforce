@@ -43,9 +43,7 @@
 
   <!-- sudo -E ant install -->
   <target name="install" depends="jar" description="install files">
-    <copy file="../../stubs/linux64.bin" tofile="/usr/bin/${app}"/>
-    <chmod file="/usr/bin/${app}" perm="+x"/>
-    <copy file="${app}.cfg" todir="/usr/bin/"/>
+    <elf/>
     <copy file="jfrepo.jar" todir="/usr/share/java"/>
     <copy file="jfrepo-ubuntu.list" todir="/etc"/>
     <copy file="jfrepo-fedora.list" todir="/etc"/>

@@ -51,9 +51,7 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
-    <copy file="../../stubs/linux64.bin" tofile="/usr/bin/${app}"/>
-    <chmod file="/usr/bin/${app}" perm="+x"/>
-    <copy file="${app}.cfg" todir="/usr/bin/"/>
+    <elf/>
     <copy file="jftest3d.jar" todir="/usr/share/java"/>
     <copy file="00000000.png" todir="/usr/bin"/>
   </target>
