@@ -3,6 +3,7 @@
   <Product Id="*" UpgradeCode="{99CE8370-51AC-4729-8CCE-B2BBE8CA027F}" Version="0.6" Language="1033" Name="jfFTP" Manufacturer="Peter Quiring">
     <Package InstallerVersion="300" Compressed="yes"/>
     <Media Id="1" Cabinet="files.cab" EmbedCab="yes" />
+    <UIRef Id="WixUI_Minimal" />
 
     <Icon Id="icon.ico" SourceFile="jfftp.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico"/>

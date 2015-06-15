@@ -21,7 +21,7 @@ import javax.swing.text.*;
 
 public class JEdit extends javax.swing.JFrame implements FindEvent, ReplaceEvent, DocumentListener {
 
-  private String getVersion() { return "0.8"; }
+  private String getVersion() { return "0.9"; }
 
   /** Creates new form jfedit */
   public JEdit() {
@@ -642,11 +642,37 @@ public class JEdit extends javax.swing.JFrame implements FindEvent, ReplaceEvent
     String chstr = "" + ch;
     for(int a=0;a<lns.length;a++) {
       if (a > 0) newString.append("\n");
-      newString.append(chstr);
+      if (lns[a].length() > 0) {
+        newString.append(chstr);
+        se++;
+      }
       newString.append(lns[a]);
-      se++;
     }
     txt.replaceSelection(newString.toString());
+    txt.setSelectionStart(ss);
+    txt.setSelectionEnd(se);
+  }
+
+  private void lowercase() {
+    if (pages.size() == 0) return;
+    int idx = getidx();
+    JFTextArea txt = pages.get(idx).txt;
+    int ss = txt.getSelectionStart();
+    int se = txt.getSelectionEnd();
+    if (ss == se) return;
+    txt.replaceSelection(txt.getSelectedText().toLowerCase());
+    txt.setSelectionStart(ss);
+    txt.setSelectionEnd(se);
+  }
+
+  private void uppercase() {
+    if (pages.size() == 0) return;
+    int idx = getidx();
+    JFTextArea txt = pages.get(idx).txt;
+    int ss = txt.getSelectionStart();
+    int se = txt.getSelectionEnd();
+    if (ss == se) return;
+    txt.replaceSelection(txt.getSelectedText().toUpperCase());
     txt.setSelectionStart(ss);
     txt.setSelectionEnd(se);
   }
@@ -667,6 +693,8 @@ public class JEdit extends javax.swing.JFrame implements FindEvent, ReplaceEvent
         "F6 = Shift Selection right 1 space\n" +
         "F7 = Shift Selection left 1 tab\n" +
         "F8 = Shift Selection right 1 tab\n" +
+        "F9 = Lower case Selection\n" +
+        "F10 = Upper case Selection\n" +
         "CTRL-O = Open\n" +
         "CTRL-W = Close\n" +
         "CTRL-S = Save\n" +
@@ -715,6 +743,8 @@ public class JEdit extends javax.swing.JFrame implements FindEvent, ReplaceEvent
     if ((f1 == KeyEvent.VK_F6) && (f2 == 0)) { shift_right(' '); }
     if ((f1 == KeyEvent.VK_F7) && (f2 == 0)) { shift_left('\t'); }
     if ((f1 == KeyEvent.VK_F8) && (f2 == 0)) { shift_right('\t'); }
+    if ((f1 == KeyEvent.VK_F9) && (f2 == 0)) { lowercase(); }
+    if ((f1 == KeyEvent.VK_F10) && (f2 == 0)) { uppercase(); evt.consume(); }
     if ((f1 == KeyEvent.VK_N) && (f2 == KeyEvent.CTRL_MASK)) { addpage("untitled"); return; }
     if ((f1 == KeyEvent.VK_S) && (f2 == KeyEvent.CTRL_MASK)) { savepage(); return; }
     if ((f1 == KeyEvent.VK_Q) && (f2 == KeyEvent.CTRL_MASK)) { savepageas(); return; }

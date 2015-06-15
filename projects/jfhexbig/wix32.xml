@@ -3,6 +3,7 @@
   <Product Id="*" UpgradeCode="{486E9A18-21FA-4AEB-B809-A5627F991F93}" Version="0.8" Language="1033" Name="jfHexBig" Manufacturer="Peter Quiring">
     <Package InstallerVersion="300" Compressed="yes"/>
     <Media Id="1" Cabinet="files.cab" EmbedCab="yes" />
+    <UIRef Id="WixUI_Minimal" />
 
     <Icon Id="icon.ico" SourceFile="jfhexbig.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico"/>

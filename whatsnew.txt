@@ -1,5 +1,46 @@
 What's new...
 
+Jun 9/2015 : JF 9.0.0 released!
+  - after spending years working with JNA I've decided to switch back to JNI.
+    - JNA uses libffi which is too complex and VERY slow.
+  - Native sound has been removed - don't notice a latency difference with Java sound anymore and it's just redundant
+  - All Windows native code has been converted and tested
+    - mingw headers have greatly improved since last time I used JNI (only 2 minor GUIDs missing)
+    - jawt is used to get window handles for OpenGL support
+    - removed jfRDP for now (I have a different plan)
+  - All Linux native code has been converted and mostly tested (except the jfLinux related APIs)
+    - OpenGL seems stable
+    - jawt is used to get window handles for OpenGL support
+    - WebCamera uses libv4l2 which will convert colorspaces to RGB
+      - so all cameras should be supported now
+    - deb packages now specify Architecture set to amd64 since the packages do include some native code
+      - since Linux is free I'm not going to bother with i386 packages (objections?)
+  - Mac native code only supports WebCamera and ffmpeg
+    - OpenGL is not supported because Java 7's new AWT only allows for a CALayer
+      - the NSOpenGLCALayer doesn't give full control over the OpenGLContext (when to swap, etc).
+        - you can only use OpenGL in the drawInOpenGLContext callback
+      - hence JOGL uses a GLAutoDrawable (it's automatic)
+        - I'ved used JOGL before but found the API too complex (and too many jars/dlls)
+      - some JavaForce OpenGL projects require full OpenGL control
+      - only option is to use another toolkit such as SWT or LWJGL with TWL to support Macs
+      - even Oracle is dumping AWT and creating JavaFX (which doesn't expose OpenGL yet)
+    - WebCamera is not stable yet
+  - with the new JNI library I'm already seeing better performance in many of the multi-media apps
+  - fixed Javaforce's OpenGL GLSL code to work with Mesa3D (which doesn't support flat varying)
+    - used a uniform shared between the vertex and fragment shaders instead
+  - thanks to who ever is putting JavaForce on github.com - it's been real useful ;)
+  - all generated MSI files will now show minial dialogs (licence agreement, installation completion, repair, etc.)
+    - the common public license used seems acceptable
+  - JFImage now supports saving *.icns files (Mac Icons)
+    - see javaforce.utils.jimgconvert
+  - jfdmg/1.0 released!
+    - a new utility to generate Mac .dmg files
+    - supports hciutil (mac only) or genisoimage (cygwin?/linux) to generate .dmg files
+    - genisoimage creates 'uncompressed' .dmg files (jars are compressed anyways)
+    - untested
+  - jfEdit/0.9 released!
+    - F9/F10 to change selection to lower/upper case and minor fixes
+
 May 23/2015 : JF 8.1.0 released!
   - Linux : .cfg files are now added to ELF executable
   - jfRDP/0.3 released!

@@ -431,7 +431,7 @@ public class Music {
   public static final byte FXCMD_SET_BPM             = 12;  //int = new bpm
 
   private Listener listener;
-  private Sound.Output output;
+  private AudioOutput output;
   private int samplesPerBuffer, samplesPerBuffer2;
   private short[] samples;
   private Timer timer;
@@ -464,9 +464,9 @@ public class Music {
   /** Starts the sound output engine.
    * After you can start music or sound playback.
    */
-  public boolean start(int milliSec, int soundChannels, boolean useNativeSound) {
+  public boolean start(int milliSec, int soundChannels) {
     if (output != null) stop();
-    output = Sound.getOutput(useNativeSound);
+    output = new AudioOutput();
     if (output == null) return false;
     sounds = new Track[soundChannels];
     for(int a=0;a<soundChannels;a++) {

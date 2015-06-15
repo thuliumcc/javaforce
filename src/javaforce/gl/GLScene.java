@@ -52,14 +52,12 @@ public class GLScene {
     gl.glActiveTexture(GL.GL_TEXTURE0);
 
     vertexShader = gl.glCreateShader(GL.GL_VERTEX_SHADER);
-    String vertexLines[] = vertex.split("\n");
-    gl.glShaderSource(vertexShader, vertexLines.length, vertexLines, null);
+    gl.glShaderSource(vertexShader, 1, new String[] {vertex}, null);
     gl.glCompileShader(vertexShader);
     JFLog.log("vertex log=" + gl.glGetShaderInfoLog(vertexShader));
 
     fragShader = gl.glCreateShader(GL.GL_FRAGMENT_SHADER);
-    String fragmentLines[] = fragment.split("\n");
-    gl.glShaderSource(fragShader, fragmentLines.length, fragmentLines, null);
+    gl.glShaderSource(fragShader, 1, new String[] {fragment}, null);
     gl.glCompileShader(fragShader);
     JFLog.log("fragment log=" + gl.glGetShaderInfoLog(fragShader));
 

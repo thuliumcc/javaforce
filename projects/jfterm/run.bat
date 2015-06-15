@@ -1,2 +1,2 @@
 @echo off
-java -cp javaforce.jar;jna.jar;jfterm.jar;jsch.jar;jzlib.jar TermApp %1
+java -cp javaforce.jar;jfterm.jar;jsch.jar;jzlib.jar TermApp %1

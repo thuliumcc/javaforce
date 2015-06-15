@@ -9,10 +9,9 @@ import java.io.*;
 import javax.swing.*;
 
 import javaforce.*;
-import javaforce.jna.*;
 import javaforce.media.*;
 
-public class MainPanel extends javax.swing.JPanel implements FFMPEGIO {
+public class MainPanel extends javax.swing.JPanel implements MediaIO {
 
   public static String version = "0.2";
 
@@ -291,17 +290,19 @@ public class MainPanel extends javax.swing.JPanel implements FFMPEGIO {
   private javax.swing.JComboBox vBitRate;
   // End of variables declaration//GEN-END:variables
 
-  private Camera.Input camera;
-  private Sound.Input mic;
+  private Camera camera;
+  private AudioInput mic;
   private RandomAccessFile raf;
   private boolean active = false;
   private boolean working = false;
   private Object doNext = new Object();
 
   public void listCameras() {
-    camera = Camera.getInput();
+    camera = new Camera();
     camera.init();
     String list[] = camera.listDevices();
+    camera.uninit();
+    camera = null;
     cameraDevices.removeAllItems();
     for(int a=0;a<list.length;a++) {
       cameraDevices.addItem(list[a]);
@@ -309,7 +310,7 @@ public class MainPanel extends javax.swing.JPanel implements FFMPEGIO {
   }
 
   public void listAudioDevices() {
-    mic = Sound.getInput(true);
+    mic = new AudioInput();
     String list[] = mic.listDevices();
     audioDevices.removeAllItems();
     for(int a=0;a<list.length;a++) {
@@ -362,6 +363,15 @@ public class MainPanel extends javax.swing.JPanel implements FFMPEGIO {
       if (sams[a] > peak) peak = sams[a];
     }
     return (peak * 100) / 32768;
+  }
+
+  public void swapEndian(byte in[], short out[]) {
+    int p = 0;
+    for(int a=0;a<out.length;a++) {
+      out[a] = in[p++];
+      out[a] <<= 8;
+      out[a] += in[p++] & 0xff;
+    }
   }
 
   public class Worker extends Thread {
@@ -420,14 +430,17 @@ public class MainPanel extends javax.swing.JPanel implements FFMPEGIO {
         return;
       }
 
+      camera = new Camera();
+      camera.init();
+      camera.listDevices();
       if (!camera.start(cameraDevices.getSelectedIndex(), 640, 480)) {
         failed("Unable to start recording from camera");
         return;
       }
 
-      FFMPEG.Encoder encoder = new FFMPEG.Encoder();
-      encoder.config_audio_bit_rate = JF.atoi((String)aBitRate.getSelectedItem());
-      encoder.config_video_bit_rate = JF.atoi((String)vBitRate.getSelectedItem());
+      MediaEncoder encoder = new MediaEncoder();
+      encoder.setAudioBitRate(JF.atoi((String)aBitRate.getSelectedItem()));
+      encoder.setVideoBitRate(JF.atoi((String)vBitRate.getSelectedItem()));
       int width = camera.getWidth();
       int height = camera.getHeight();
       JFLog.log("size=" + width + "," + height);
@@ -440,7 +453,7 @@ public class MainPanel extends javax.swing.JPanel implements FFMPEGIO {
         return;
       }
       if (doAudio) {
-        mic = Sound.getInput(true);
+        mic = new AudioInput();
         if (!mic.start(chs, audioRate, 16, samples * 2, (String)audioDevices.getSelectedItem())) {
           failed("Unable to start recording audio");
           return;
@@ -450,7 +463,8 @@ public class MainPanel extends javax.swing.JPanel implements FFMPEGIO {
       active = true;
       start.setText("Stop");
       start.setEnabled(true);
-      short sams[] = new short[samples];
+      byte sams8[] = new byte[samples*2];
+      short sams16[] = new short[samples];
       boolean skip_frame = false;
 
       //sync video/audio
@@ -458,7 +472,7 @@ public class MainPanel extends javax.swing.JPanel implements FFMPEGIO {
       do{
         ready = camera.getFrame() != null;
         if (doAudio) {
-          while (mic.read(sams)) {}
+          while (mic.read(sams8)) {}
         }
       } while (active && !ready);
 
@@ -493,12 +507,13 @@ public class MainPanel extends javax.swing.JPanel implements FFMPEGIO {
           JF.sleep(5);
           continue;
         }
-        encoder.add_video(px);
+        encoder.addVideo(px);
         if (doAudio) {
-          while (mic.read(sams)) {
-            encoder.add_audio(sams);
+          while (mic.read(sams8)) {
+            swapEndian(sams8, sams16);
+            encoder.addAudio(sams16);
             if (doPreview) {
-              previewAudio.setValue(amplitude(sams));
+              previewAudio.setValue(amplitude(sams16));
             }
           }
         }
@@ -527,6 +542,8 @@ public class MainPanel extends javax.swing.JPanel implements FFMPEGIO {
       }
       encoder.stop();
       camera.stop();
+      camera.uninit();
+      camera = null;
       if (doAudio) mic.stop();
       try {
         raf.close();
@@ -541,11 +558,11 @@ public class MainPanel extends javax.swing.JPanel implements FFMPEGIO {
     }
   }
 
-  public int read(FFMPEG.Coder coder, byte[] bytes, int i) {
+  public int read(MediaCoder coder, byte[] bytes) {
     return 0;
   }
 
-  public int write(FFMPEG.Coder coder, byte[] bytes) {
+  public int write(MediaCoder coder, byte[] bytes) {
     try {
       raf.write(bytes);
       return bytes.length;
@@ -555,12 +572,12 @@ public class MainPanel extends javax.swing.JPanel implements FFMPEGIO {
     }
   }
 
-  public long seek(FFMPEG.Coder coder, long pos, int how) {
+  public long seek(MediaCoder coder, long pos, int how) {
     try {
       switch (how) {
-        case FFMPEG.SEEK_SET: break;
-        case FFMPEG.SEEK_CUR: pos += raf.getFilePointer(); break;
-        case FFMPEG.SEEK_END: pos += raf.length(); break;
+        case MediaCoder.SEEK_SET: break;
+        case MediaCoder.SEEK_CUR: pos += raf.getFilePointer(); break;
+        case MediaCoder.SEEK_END: pos += raf.length(); break;
       }
       raf.seek(pos);
       return pos;

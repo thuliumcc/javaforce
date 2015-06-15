@@ -67,7 +67,7 @@
       </fileset>
       <fileset dir="../.." includes="license.txt"/>
     </zip>
-    <move file="jfbroadcast-${version}.zip" todir="${user.home}/zips"/>
+    <move file="jfbroadcast-${version}.zip" todir="${home}/release"/>
   </target>
 
   <target name="release-src" depends="" description="create release zip file">
@@ -88,7 +88,7 @@
         <include name="jf/stubs/*"/>
       </fileset>
     </zip>
-    <move file="jfbroadcast-src-${version}.zip" todir="${user.home}/zips"/>
+    <move file="jfbroadcast-src-${version}.zip" todir="${home}/release"/>
   </target>
 
   <target name="javadoc" description="generate java documentation">

@@ -6,7 +6,7 @@
  */
 
 import javaforce.*;
-import javaforce.jna.*;
+import javaforce.media.*;
 
 public class VideoApplet extends javax.swing.JApplet {
 
@@ -15,9 +15,9 @@ public class VideoApplet extends javax.swing.JApplet {
    */
   @Override
   public void init() {
-    if (!FFMPEG.init()) {
-      if (!FFMPEG.download()) return;
-      if (!FFMPEG.init()) return;  //try again after download
+    if (!MediaCoder.init()) {
+      if (!MediaCoder.download()) return;
+      if (!MediaCoder.init()) return;  //try again after download
     }
     final javax.swing.JApplet applet = this;
     /* Create and display the applet */

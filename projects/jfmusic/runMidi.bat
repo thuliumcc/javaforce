@@ -1,1 +1,1 @@
-java -cp javaforce.jar;jna.jar;jfmusic.jar MidiKeyboard %1
+java -cp javaforce.jar;jfmusic.jar MidiKeyboard %1

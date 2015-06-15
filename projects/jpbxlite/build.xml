@@ -116,7 +116,7 @@
       </fileset>
       <fileset dir="../.." includes="license.txt"/>
     </zip>
-    <move file="jpbxlite-${version}.zip" todir="${user.home}/zips"/>
+    <move file="jpbxlite-${version}.zip" todir="${home}/release"/>
   </target>
 
   <target name="release-src" depends="" description="create release zip file">
@@ -144,7 +144,7 @@
         <include name="jf/projects/jpbxlite/static/*"/>
       </fileset>
     </zip>
-    <move file="jpbxlite-src-${version}.zip" todir="${user.home}/zips"/>
+    <move file="jpbxlite-src-${version}.zip" todir="${home}/release"/>
   </target>
 
   <target name="clean" description="deletes compiled files">

@@ -3,6 +3,7 @@
   <Product Id="*" UpgradeCode="{C7D9918C-24BF-4826-913F-4C6BCE70746D}" Version="0.8" Language="1033" Name="jfEdit" Manufacturer="Peter Quiring">
     <Package InstallerVersion="300" Compressed="yes" Platform="x64"/>
     <Media Id="1" Cabinet="files.cab" EmbedCab="yes" />
+    <UIRef Id="WixUI_Minimal" />
 
     <Icon Id="icon.ico" SourceFile="jfedit.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico"/>

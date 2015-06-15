@@ -218,6 +218,7 @@ public class VideoPanel extends javax.swing.JPanel {
       }
     });
   }
+
   public void paintComponent(Graphics g) {
     if (!needPainting) {
       JFLog.log("VideoPanel:not painting");

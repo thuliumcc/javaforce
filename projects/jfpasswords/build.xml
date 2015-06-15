@@ -52,7 +52,7 @@
     <copy file="${app}.html" todir="/usr/share/jhelp"/>
   </target>
 
-  <target name="release-bin" depends="sign-jar" description="create release zip file">
+  <target name="release-bin" description="create release zip file">
     <zip destfile="${app}-${version}.zip">
       <fileset dir=".">
         <include name="*.jar"/>
@@ -61,7 +61,7 @@
       </fileset>
       <fileset dir="../.." includes="license.txt"/>
     </zip>
-    <move file="${app}-${version}.zip" todir="${user.home}/zips"/>
+    <move file="${app}-${version}.zip" todir="${home}/release"/>
   </target>
 
   <target name="release-src" depends="" description="create release zip file">
@@ -82,7 +82,7 @@
         <include name="jf/jars/javaforce.jar"/>
       </fileset>
     </zip>
-    <move file="${app}-src-${version}.zip" todir="${user.home}/zips"/>
+    <move file="${app}-src-${version}.zip" todir="${home}/release"/>
   </target>
 
   <target name="clean" description="deletes compiled files">

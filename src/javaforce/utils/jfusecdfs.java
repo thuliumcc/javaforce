@@ -1,11 +1,8 @@
 package javaforce.utils;
 
-import java.util.*;
-
-import com.sun.jna.*;
-
-import javaforce.jna.*;
 import javaforce.*;
+import javaforce.jni.*;
+import javaforce.jni.lnx.*;
 
 /**
  * Mount audio CD-ROMs using libcdio.
@@ -20,65 +17,35 @@ import javaforce.*;
  */
 
 public class jfusecdfs extends Fuse {
-  public interface libcdio extends Library {
-    public Pointer cdio_open_linux(String dev);
-    public void cdio_destroy(Pointer ptr);
-    public int cdio_get_num_tracks(Pointer ptr);
-    public int cdio_get_track_msf(Pointer ptr, int track, MSF msf);  //start of track in MSF
-    public int cdio_get_track_lsn(Pointer ptr, int track);  //start of track in Logical Sector Number
-    public int cdio_get_track_sec_count(Pointer ptr, int track);
-    public int cdio_read_audio_sectors(Pointer ptr, Pointer buf, int lsn, int blocks);  //2352 bytes each
-  }
-
 //NOTE : it takes 75 sectors to make 1 second of audio (44100 * 2 * 2 / 2352 = 75)
 //m = 4500 sectors each
 //s = 75 sectors each
 //f = x sectors
 
-  public class MSF extends Structure {
-    public byte m,s,f;  //min(0-99):sec(0-59):frac(0-74)
-
-    protected List getFieldOrder() {
-      return Arrays.asList(new String[] {"m", "s", "f"});
-    }
-  }
-
-  private static libcdio cdio;
-  private Pointer ptr;
+  private long ptr;
   private int nTracks;
   private int starts[];  //starting sector #
   private int lengths[];  //# of sectors
 
-  /** Must be called once to enable native library use. */
-  public static boolean cdinit() {
-    try {
-      cdio = (libcdio)Native.loadLibrary("cdio", libcdio.class);
-    } catch (Throwable t) {
-      JFLog.log(t);
-      return false;
-    }
-    return true;
-  }
-
   public boolean auth(String args[], String pass) {
-    ptr = cdio.cdio_open_linux(args[0]);
-    if (ptr == null) {
+    ptr = LnxNative.cdio_open_linux(args[0]);
+    if (ptr == 0) {
       JFLog.log("Error:Failed to open device:" + args[0]);
       return false;
     }
-    nTracks = cdio.cdio_get_num_tracks(ptr);
+    nTracks = LnxNative.cdio_get_num_tracks(ptr);
     if (nTracks <= 0) {
       JFLog.log("Error:no audio tracks found");
-      cdio.cdio_destroy(ptr);
-      ptr = null;
+      LnxNative.cdio_destroy(ptr);
+      ptr = 0;
       return false;
     }
     JFLog.log("Ok:Found " + nTracks + " tracks");
     starts = new int[nTracks];
     lengths = new int[nTracks];
     for(int a=0;a<nTracks;a++) {
-      starts[a] = cdio.cdio_get_track_lsn(ptr, a+1);
-      lengths[a] = cdio.cdio_get_track_sec_count(ptr, a+1);
+      starts[a] = LnxNative.cdio_get_track_lsn(ptr, a+1);
+      lengths[a] = LnxNative.cdio_get_track_sec_count(ptr, a+1);
     }
     return true;
   }
@@ -92,19 +59,17 @@ public class jfusecdfs extends Fuse {
   }
 
   public void main2(String args[]) {
-    if (!init()) return;
-    if (!cdinit()) return;
     try {
       if (!auth(args, null)) return;
-      start(args);
-      cdio.cdio_destroy(ptr);
-      ptr = null;
+      LnxNative.fuse(args, this);
+      LnxNative.cdio_destroy(ptr);
+      ptr = 0;
     } catch (Exception e) {
       JFLog.log("Error:" + e);
     }
   }
 
-  public int getattr(String path, Stat stat) {
+  public int getattr(String path, FuseStat stat) {
 //    JFLog.log("getattr:" + path);
     if (path.equals("/")) {
       stat.folder = true;
@@ -187,7 +152,7 @@ public class jfusecdfs extends Fuse {
   }
 
   private class FileState {
-    long buffer;
+    byte buffer[];
     long offset;
     int bufpos, bufsiz;
     int sectors_left;
@@ -205,7 +170,7 @@ public class jfusecdfs extends Fuse {
   static int WAV_SIZE = 44;  //total header size
 
   private void createWavHeader(FileState fs) {
-    byte header[] = new byte[WAV_SIZE];
+    byte header[] = fs.buffer;
     LE.setString(header, 0, 4, "RIFF");
     LE.setuint32(header, 4, 4 + FMT_SIZE + DATA_SIZE + fs.sectors_left * 2352);
     LE.setString(header, 8, 4, "WAVE");
@@ -219,13 +184,10 @@ public class jfusecdfs extends Fuse {
     LE.setuint16(header, 34, 16);  //bits/sample
     LE.setString(header, 36, 4, "data");
     LE.setuint32(header, 40, fs.sectors_left * 2352);  //size of actual data
-
-    Pointer cdiobuf = new Pointer(fs.buffer);
-    cdiobuf.write(0, header, 0, header.length);
     fs.bufsiz = header.length;
   }
 
-  public int open(String path, Pointer ffi) {
+  public int open(String path, int mode, int fd) {
 //    JFLog.log("open:" + path);
     if (!path.endsWith(".wav")) return -1;
     int idx1 = path.indexOf("track");
@@ -237,13 +199,13 @@ public class jfusecdfs extends Fuse {
       FileState fs = new FileState();
       fs.canRead = true;
       fs.canWrite = false;
-      fs.buffer = Native.malloc(2352 * 32);
+      fs.buffer = new byte[2352 * 32];
       fs.bufpos = 0;
       fs.bufsiz = 0;
       fs.sectors_left = lengths[track];
       fs.sector_pos = starts[track];
       createWavHeader(fs);
-      attachObject(ffi, fs);
+      attachObject(fd, fs);
       return 0;
     } catch (Exception e) {
       JFLog.log(e);
@@ -251,9 +213,10 @@ public class jfusecdfs extends Fuse {
     }
   }
 
-  public int read(String path, Pointer buf, int size, long offset, Pointer ffi) {
+  public int read(String path, byte buf[], long offset, int fh) {
+    int size = buf.length;
 //    JFLog.log("read:" + path + ",size=" + size + ",offset=" + offset);
-    FileState fs = (FileState)getObject(ffi);
+    FileState fs = (FileState)getObject(fh);
     if (fs == null) {
 //      JFLog.log("no fs");
       return -1;
@@ -262,7 +225,6 @@ public class jfusecdfs extends Fuse {
 //      JFLog.log("!read");
       return -1;
     }
-    Pointer cdiobuf = new Pointer(fs.buffer);
     int read = 0;
     try {
       synchronized(fs.lock) {
@@ -281,7 +243,7 @@ public class jfusecdfs extends Fuse {
             if (sectors_to_read > fs.sectors_left) sectors_to_read = fs.sectors_left;
             //TODO : add fault tolerance here (jitter???)
 //            JFLog.log("read_sectors:pos=" + fs.sector_pos + ",len=" + sectors_to_read);
-            int res = cdio.cdio_read_audio_sectors(ptr, cdiobuf, fs.sector_pos, sectors_to_read);
+            int res = LnxNative.cdio_read_audio_sectors(ptr, fs.buffer, fs.sector_pos, sectors_to_read);
             if (res != 0) {
               JFLog.log("Error:reading disc");
               return -1;
@@ -292,10 +254,9 @@ public class jfusecdfs extends Fuse {
             fs.sector_pos += sectors_to_read;
           }
           if (amt > fs.bufsiz) amt = fs.bufsiz;
-          cdiobuf.read(fs.bufpos, fs.data, 0, amt);
+          System.arraycopy(fs.buffer, fs.bufpos, buf, pos, amt);
           fs.bufpos += amt;
           fs.bufsiz -= amt;
-          buf.write(pos, fs.data, 0, amt);
           read += amt;
           pos += amt;
         }
@@ -308,42 +269,37 @@ public class jfusecdfs extends Fuse {
     }
   }
 
-  public int write(String path, Pointer buf, int size, long offset, Pointer ffi) {
+  public int write(String path, byte buf[], long offset, int fd) {
     return -1;
   }
 
-  public int statfs(String path, Pointer statvfs) {
+  public int statfs(String path) {
 //    JFLog.log("statfs:" + path);
     return -1;
   }
 
-  public int release(String path, Pointer ffi) {
+  public int close(String path, int fd) {
 //    JFLog.log("release:" + path);
-    FileState fs = (FileState)getObject(ffi);
+    FileState fs = (FileState)getObject(fd);
     if (fs == null) return 0;
     synchronized(fs.lock) {
-      Native.free(fs.buffer);
-      detachObject(ffi);
+      detachObject(fd);
     }
     return 0;
   }
 
-  public int readdir(String path, Pointer buf, Pointer filler, Pointer ffi) {
+  public String[] readdir(String path) {
 //    JFLog.log("readdir:" + path);
     if (!path.endsWith("/")) path += "/";
-    try {
-      for(int a=0;a<nTracks;a++) {
-        if (invokeFiller(filler, buf, "track" + (a+1) + ".wav", null) == 1) break;
-      }
-//      JFLog.log("readdir done");
-      return 0;
-    } catch (Exception e) {
-      JFLog.log(e);
-      return -1;
+    String dir[] = new String[nTracks];
+    for(int a=0;a<nTracks;a++) {
+      dir[a] = "track" + (a+1) + ".wav";
     }
+//      JFLog.log("readdir done");
+    return dir;
   }
 
-  public int create(String path, int mode, Pointer ffi) {
+  public int create(String path, int mode, int fd) {
 //    JFLog.log("create:" + path);
     try {
       //TODO

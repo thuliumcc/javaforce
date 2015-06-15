@@ -3,6 +3,7 @@
   <Product Id="*" UpgradeCode="{AC151149-6CA1-42D5-A883-C1825E18BA26}" Version="0.3" Language="1033" Name="jfMusic" Manufacturer="Peter Quiring">
     <Package InstallerVersion="300" Compressed="yes" Platform="x64"/>
     <Media Id="1" Cabinet="files.cab" EmbedCab="yes" />
+    <UIRef Id="WixUI_Minimal" />
 
     <Icon Id="icon.ico" SourceFile="jfmusic.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico"/>
@@ -23,10 +24,10 @@
       <Component Id="appfiles" Guid="{6F5087E0-3FD0-4DD3-9E70-557FA883A5AD}" Win64="yes">
         <File Id="jfmusic.jar" Source="jfmusic.jar" KeyPath="yes"/>
         <File Id="javaforce.jar" Source="javaforce.jar"/>
-        <File Id="jna.jar" Source="jna.jar"/>
         <File Id="jfmusic.exe" Source="jfmusic.exe"/>
         <File Id="jfmidi.exe" Source="jfmidi.exe"/>
         <File Id="FurElise.mproj" Source="examples/FurElise.mproj"/>
+        <File Id="jfnative64.dll" Source="jfnative64.dll"/>
       </Component>
     </DirectoryRef>
 

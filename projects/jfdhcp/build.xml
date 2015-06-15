@@ -24,7 +24,7 @@
       </fileset>
       <fileset dir="../.." includes="license.txt"/>
     </zip>
-    <move file="${app}-${version}.zip" todir="${user.home}/zips"/>
+    <move file="${app}-${version}.zip" todir="${home}/release"/>
   </target>
 
   <target name="install" description="install files for linux">

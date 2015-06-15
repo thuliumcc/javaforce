@@ -10,7 +10,6 @@ import java.util.*;
 import javax.swing.*;
 
 import javaforce.*;
-import javaforce.jna.*;
 
 public class MixTracks extends javax.swing.JDialog implements ActionListener {
 

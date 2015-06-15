@@ -3,6 +3,7 @@
   <Product Id="*" UpgradeCode="{34b7ff5a-0b9d-4f4c-934c-a9ac08640c05}" Version="1.9.4" Language="1033" Name="jPhoneLite" Manufacturer="Peter Quiring">
     <Package InstallerVersion="300" Compressed="yes" Platform="x64"/>
     <Media Id="1" Cabinet="files.cab" EmbedCab="yes" />
+    <UIRef Id="WixUI_Minimal" />
 
     <Icon Id="icon.ico" SourceFile="jphonelite.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico"/>
@@ -23,9 +24,9 @@
       <Component Id="appfiles" Guid="{65edc291-9a12-4f6c-844b-0e0258f29ee3}" Win64="yes">
         <File Id="jphonelite.jar" Source="jphonelite.jar" KeyPath="yes"/>
         <File Id="javaforce.jar" Source="javaforce.jar"/>
-        <File Id="jna.jar" Source="jna.jar"/>
         <File Id="bouncycastle.jar" Source="bouncycastle.jar"/>
         <File Id="jphonelite.exe" Source="jphonelite.exe"/>
+        <File Id="jfnative64.dll" Source="jfnative64.dll"/>
       </Component>
     </DirectoryRef>
 

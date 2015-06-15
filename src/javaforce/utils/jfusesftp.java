@@ -11,10 +11,9 @@ import java.util.*;
 
 import com.jcraft.jsch.*;
 
-import com.sun.jna.*;
-
 import javaforce.*;
-import javaforce.jna.*;
+import javaforce.jni.*;
+import javaforce.jni.lnx.*;
 
 public class jfusesftp extends Fuse {
   private String user, share, server;  //user@server/share
@@ -71,7 +70,6 @@ public class jfusesftp extends Fuse {
   }
 
   public void main2(String args[]) {
-    if (!init()) return;
     try {
       //auth first
       System.out.print("Password:");
@@ -80,13 +78,13 @@ public class jfusesftp extends Fuse {
       if (!auth(args, pass)) throw new Exception("bad password");
       System.out.println("Ok");
       System.out.flush();
-      start(args);
+      LnxNative.fuse(args, this);
     } catch (Exception e) {
       JFLog.log("Error:" + e);
     }
   }
 
-  public int getattr(String path, Stat stat) {
+  public int getattr(String path, FuseStat stat) {
 //    JFLog.log("getattr:" + path);
     try {
 //      Vector<ChannelSftp.LsEntry> list = channel.ls(path);
@@ -192,13 +190,13 @@ public class jfusesftp extends Fuse {
     InputStream is;
   }
 
-  public int open(String path, Pointer ffi) {
+  public int open(String path, int mode, int fd) {
 //    JFLog.log("open:" + path);
     try {
       SftpATTRS attrs = channel.lstat(path);
       if (attrs.isDir()) throw new Exception("not a file");
       FileState fs = new FileState();
-      attachObject(ffi, fs);
+      attachObject(fd, fs);
       return 0;
     } catch (Exception e) {
       JFLog.log(e);
@@ -206,9 +204,10 @@ public class jfusesftp extends Fuse {
     }
   }
 
-  public int read(String path, Pointer buf, int size, long offset, Pointer ffi) {
+  public int read(String path, byte buf[], long offset, int fd) {
+    int size = buf.length;
 //    JFLog.log("read:" + path);
-    FileState fs = (FileState)getObject(ffi);
+    FileState fs = (FileState)getObject(fd);
     if (fs == null) {
 //      JFLog.log("no fs");
       return -1;
@@ -243,9 +242,10 @@ public class jfusesftp extends Fuse {
     }
   }
 
-  public int write(String path, Pointer buf, int size, long offset, Pointer ffi) {
+  public int write(String path, byte buf[], long offset, int fd) {
+    int size = buf.length;
 //    JFLog.log("write:" + path);
-    FileState fs = (FileState)getObject(ffi);
+    FileState fs = (FileState)getObject(fd);
     if (fs == null) {
 //      JFLog.log("fs null");
       return -1;
@@ -254,8 +254,6 @@ public class jfusesftp extends Fuse {
 //      JFLog.log("write after read");
       return -1;
     }
-    byte data[] = new byte[size];
-    buf.read(0, data, 0, size);
     try {
       if (!fs.writing) {
         if (offset != 0) throw new Exception("write not from start of file");
@@ -265,7 +263,7 @@ public class jfusesftp extends Fuse {
       } else {
         if (fs.pos != offset) throw new Exception("write not sequential");
       }
-      fs.os.write(data);
+      fs.os.write(buf);
       fs.pos += size;
       return size;
     } catch (Exception e) {
@@ -274,34 +272,36 @@ public class jfusesftp extends Fuse {
     }
   }
 
-  public int statfs(String path, Pointer statvfs) {
+  public int statfs(String path) {
 //    JFLog.log("statfs:" + path);
     return -1;
   }
 
-  public int release(String path, Pointer ffi) {
-//    JFLog.log("release:" + path);
-    detachObject(ffi);
+  public int close(String path, int fd) {
+//    JFLog.log("close:" + path);
+    detachObject(fd);
     return 0;
   }
 
   @SuppressWarnings("unchecked")
-  public int readdir(String path, Pointer buf, Pointer filler, Pointer ffi) {
+  public String[] readdir(String path) {
 //    JFLog.log("readdir:" + path);
     if (!path.endsWith("/")) path += "/";
     try {
       Vector<ChannelSftp.LsEntry> files = channel.ls(path);  //unchecked conversion
-      for(int a=0;a<files.size();a++) {
-        invokeFiller(filler, buf, files.get(a).getFilename(), null);
+      int cnt = files.size();
+      String dir[] = new String[cnt];
+      for(int a=0;a<cnt;a++) {
+        dir[a] = files.get(a).getFilename();
       }
-      return 0;
+      return dir;
     } catch (Exception e) {
       JFLog.log(e);
-      return -1;
+      return null;
     }
   }
 
-  public int create(String path, int mode, Pointer ffi) {
+  public int create(String path, int mode, int fd) {
 //    JFLog.log("create:" + path);
     return 0;
   }

@@ -89,10 +89,6 @@ public class ThreeDeeApp extends javax.swing.JFrame {
    * @param args the command line arguments
    */
   public static void main(String args[]) {
-    if (!GL.init()) {
-      JF.showError("Error", "Failed to init OpenGL");
-      System.exit(0);
-    }
     /* Create and display the form */
     java.awt.EventQueue.invokeLater(new Runnable() {
       public void run() {

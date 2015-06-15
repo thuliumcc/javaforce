@@ -5,6 +5,7 @@
  */
 
 import java.io.*;
+import java.awt.*;
 import javax.swing.*;
 
 import javaforce.*;
@@ -18,10 +19,6 @@ public class MainPanel extends javax.swing.JPanel {
   public MainPanel() {
     initComponents();
     Element.init();
-    if (!GL.init()) {
-      JF.showError("Error", "This app requires OpenGL 3.0+ (init failed)");
-      System.exit(0);
-    }
     newProject();
   }
 
@@ -35,20 +32,47 @@ public class MainPanel extends javax.swing.JPanel {
   private void initComponents() {
 
     tabs = new javax.swing.JTabbedPane();
+    panel = new javax.swing.JPanel();
+    status = new javax.swing.JLabel();
+    canvas = new java.awt.Canvas();
+
+    status.setText("Status : Ready");
+
+    javax.swing.GroupLayout panelLayout = new javax.swing.GroupLayout(panel);
+    panel.setLayout(panelLayout);
+    panelLayout.setHorizontalGroup(
+      panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(panelLayout.createSequentialGroup()
+        .addComponent(status, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        .addComponent(canvas, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
+    );
+    panelLayout.setVerticalGroup(
+      panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addComponent(status, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+      .addComponent(canvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+    );
 
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
     this.setLayout(layout);
     layout.setHorizontalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(tabs, javax.swing.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
+      .addComponent(tabs, javax.swing.GroupLayout.DEFAULT_SIZE, 586, Short.MAX_VALUE)
+      .addComponent(panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(tabs, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 797, Short.MAX_VALUE)
+      .addGroup(layout.createSequentialGroup()
+        .addComponent(tabs, javax.swing.GroupLayout.DEFAULT_SIZE, 663, Short.MAX_VALUE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE))
     );
   }// </editor-fold>//GEN-END:initComponents
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private java.awt.Canvas canvas;
+  private javax.swing.JPanel panel;
+  private javax.swing.JLabel status;
   private javax.swing.JTabbedPane tabs;
   // End of variables declaration//GEN-END:variables
 
@@ -123,6 +147,33 @@ public class MainPanel extends javax.swing.JPanel {
     }
   }
 
+  public static GL gl;
+
+  public void paint(Graphics g) {
+    super.paint(g);
+    if (gl == null) {
+      init3d();
+    }
+  }
+
+  private boolean init3d() {
+    gl = new GL(new GLInterface() {
+      public void init(GL gl, Component c) {
+        int ver[] = gl.getVersion();
+        if (ver[0] < 3) {
+          JF.showError("Error", "This app requires OpenGL 3.0+ (detected:" + gl.glGetString(GL.GL_VERSION) + ")");
+          System.exit(0);
+        }
+      }
+      public void render(GL gl) {
+      }
+      public void resize(GL gl, int x, int y) {
+      }
+    });
+    gl.createComponent(canvas, null);
+    return true;
+  }
+
   public void render() {
     ProjectPanel project = (ProjectPanel)tabs.getSelectedComponent();
     project.render();
@@ -141,5 +192,22 @@ public class MainPanel extends javax.swing.JPanel {
   public void reScan() {
     ProjectPanel project = (ProjectPanel)tabs.getSelectedComponent();
     project.reScan();
+  }
+
+  public void setStatus(String msg) {
+    status.setText(msg);
+  }
+
+  public static GL getGL() {
+    return gl;
+  }
+
+  /** Runs a runnable for OpenGL on the EDT  */
+  public static void runGL(Runnable run) {
+    try {
+      java.awt.EventQueue.invokeAndWait(run);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 }

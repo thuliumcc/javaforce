@@ -13,10 +13,10 @@ import javax.swing.*;
 import javax.swing.tree.*;
 
 import javaforce.*;
-import javaforce.jna.*;
+import javaforce.media.*;
 import javaforce.gl.*;
 
-public class ProjectPanel extends javax.swing.JPanel implements FFMPEGIO {
+public class ProjectPanel extends javax.swing.JPanel implements MediaIO {
 
   /**
    * Creates new form ProjectPanel
@@ -533,10 +533,10 @@ public class ProjectPanel extends javax.swing.JPanel implements FFMPEGIO {
   public TrackPanel dragTrack, dragSrcTrack;
   private CameraPanel camera;
 
-  public int read(FFMPEG.Coder coder, byte[] bytes, int i) {
+  public int read(MediaCoder coder, byte[] bytes) {
     int read = 0;
     try {
-      read = raf.read(bytes, 0, i);
+      read = raf.read(bytes, 0, bytes.length);
     } catch (Exception e) {
       JFLog.log(e);
     }
@@ -544,7 +544,7 @@ public class ProjectPanel extends javax.swing.JPanel implements FFMPEGIO {
     return read;
   }
 
-  public int write(FFMPEG.Coder coder, byte[] bytes) {
+  public int write(MediaCoder coder, byte[] bytes) {
     try {
       raf.write(bytes, 0, bytes.length);
     } catch (Exception e) {
@@ -554,12 +554,12 @@ public class ProjectPanel extends javax.swing.JPanel implements FFMPEGIO {
     return bytes.length;
   }
 
-  public long seek(FFMPEG.Coder coder, long pos, int how) {
+  public long seek(MediaCoder coder, long pos, int how) {
     try {
       switch (how) {
-        case FFMPEG.SEEK_SET: break;  //seek set
-        case FFMPEG.SEEK_CUR: pos += raf.getFilePointer(); break;  //seek cur
-        case FFMPEG.SEEK_END: pos += raf.length(); break; //seek end
+        case MediaCoder.SEEK_SET: break;  //seek set
+        case MediaCoder.SEEK_CUR: pos += raf.getFilePointer(); break;  //seek cur
+        case MediaCoder.SEEK_END: pos += raf.length(); break; //seek end
       }
       raf.seek(pos);
     } catch (Exception e) {
@@ -1010,6 +1010,7 @@ public class ProjectPanel extends javax.swing.JPanel implements FFMPEGIO {
   public class GLData {
     public GL gl;
     public GLScene scene;
+    public GLRender render;
     public GLModel model;
     public GLObject object;
     public JFImage image3d;
@@ -1017,45 +1018,39 @@ public class ProjectPanel extends javax.swing.JPanel implements FFMPEGIO {
 
   private GLData gldata;
 
-  private boolean init3d(Window w) {
+  private boolean init3d() {
     gldata = new GLData();
-    gldata.gl = GL.createWindow(w, new GLInterface() {
-      public void init(GL gl, Component c) {
-      }
-      public void render(GL gl) {
-      }
-      public void resize(GL gl, int x, int y) {
+    gldata.gl = MainPanel.getGL();
+    MainPanel.runGL(new Runnable() {
+      public void run() {
+        gldata.scene = new GLScene();
+        gldata.gl.createOffscreen(config.width, config.height);
+        gldata.scene.init(gldata.gl, GLVertexShader.source, GLFragmentShader.source);
+        gldata.render = new GLRender();
+        gldata.render.init(null, config.width, config.height);
+        gldata.image3d = new JFImage(config.width, config.height);
+        gldata.model = new GLModel();
+        gldata.object = new GLObject();
+        float z = 5.0f;
+        float x = 2.0f;
+        float y = 2.0f;
+        GLUVMap map = gldata.object.createUVMap();
+        map.textureIndex = 0;
+        gldata.object.addVertex(new float[] {-x,-y,-z}, new float[] {0,1});
+        gldata.object.addVertex(new float[] {+x,-y,-z}, new float[] {1,1});
+        gldata.object.addVertex(new float[] {-x,+y,-z}, new float[] {0,0});
+        gldata.object.addVertex(new float[] {+x,+y,-z}, new float[] {1,0});
+        gldata.object.addPoly(new int[] {0,3,2});
+        gldata.object.addPoly(new int[] {0,1,3});
+        gldata.object.copyBuffers(gldata.gl);
+        gldata.model.addObject(gldata.object);
+        gldata.scene.addModel(gldata.model);
       }
     });
-    int ver[] = gldata.gl.getVersion();
-    if (ver[0] < 3) {
-      JF.showError("Error", "This app requires OpenGL 3.0+ (detected:" + gldata.gl.glGetString(GL.GL_VERSION) + ")");
-      return false;
-    }
-    gldata.scene = new GLScene();
-    gldata.gl.createOffscreen(config.width, config.height);
-    gldata.scene.init(gldata.gl, config.width, config.height, VertexShader.source, FragmentShader.source);
-    gldata.image3d = new JFImage(config.width, config.height);
-    gldata.model = new GLModel();
-    gldata.object = new GLObject();
-    float z = 5.0f;
-    float x = 2.0f;
-    float y = 2.0f;
-    gldata.object.addVertex(new float[] {-x,-y,-z}, new float[] {0,1});
-    gldata.object.addVertex(new float[] {+x,-y,-z}, new float[] {1,1});
-    gldata.object.addVertex(new float[] {-x,+y,-z}, new float[] {0,0});
-    gldata.object.addVertex(new float[] {+x,+y,-z}, new float[] {1,0});
-    gldata.object.addPoly(new int[] {0,3,2});
-    gldata.object.addPoly(new int[] {0,1,3});
-    gldata.object.texidx = 0;
-    gldata.object.copyBuffers(gldata.gl);
-    gldata.model.addObject(gldata.object);
-    gldata.scene.addModel(gldata.model);
     return true;
   }
 
   private void uninit3d() {
-    gldata.gl.destroy();
     gldata = null;
   }
 
@@ -1108,20 +1103,24 @@ public class ProjectPanel extends javax.swing.JPanel implements FFMPEGIO {
         this.setProgress(0);
         int audioLengthPerFrame = config.audioRate / config.videoRate;
         int audioFraction = config.audioRate % config.videoRate;
-        FFMPEG.Encoder ff = new FFMPEG.Encoder();
-        ff.config_video_bit_rate = config.videoBitRate;
-        ff.config_audio_bit_rate = config.audioBitRate;
-        ff.v1001 = config.v1001;
-        ff.start(ProjectPanel.this, config.width, config.height, config.videoRate, config.audioChannels, config.audioRate, "avi", true, true);
+        MediaEncoder ff = new MediaEncoder();
+        ff.set1000Over1001(config.v1001);
+        System.out.println("bitRates:" + config.videoBitRate + "," + config.audioBitRate);
+        ff.setVideoBitRate(config.videoBitRate);
+        ff.setAudioBitRate(config.audioBitRate);
+        if (!ff.start(ProjectPanel.this, config.width, config.height, config.videoRate, config.audioChannels
+          , config.audioRate, "avi", true, true))
+        {
+          this.setLabel("Error:Encoder failed");
+          return false;
+        }
         int audioFractionCounter = 0;
         short audio0[] = new short[audioLengthPerFrame * config.audioChannels];
         short audio1[] = new short[(audioLengthPerFrame+1) * config.audioChannels];
         short audio[];
         JFImage image = new JFImage(config.width, config.height);
         boolean cut;
-        if (!init3d((Window)this.getProperty("dialog"))) {
-          return false;
-        }
+        init3d();
         CameraKey keys[] = camera.list.toArray(new CameraKey[0]);
         float delta_tx = 0, delta_ty = 0, delta_tz = 0;
         float delta_rx = 0, delta_ry = 0, delta_rz = 0;
@@ -1132,12 +1131,12 @@ public class ProjectPanel extends javax.swing.JPanel implements FFMPEGIO {
           this.setProgress(second * 100 / maxLength);
           for(int a=0;a<keys.length;a++) {
             if (keys[a].offset == second) {
-              gldata.scene.cameraReset();
-              gldata.scene.cameraTranslate(keys[a].tx, keys[a].ty, keys[a].tz);
-              gldata.scene.cameraRotate(keys[a].rx, 1.0f, 0.0f, 0.0f);
-              gldata.scene.cameraRotate(keys[a].ry, 0.0f, 1.0f, 0.0f);
-              gldata.scene.cameraRotate(keys[a].rz, 0.0f, 0.0f, 1.0f);
-              gldata.scene.fovy = keys[a].fov;
+              gldata.render.cameraReset();
+              gldata.render.cameraTranslate(keys[a].tx, keys[a].ty, keys[a].tz);
+              gldata.render.cameraRotate(keys[a].rx, 1.0f, 0.0f, 0.0f);
+              gldata.render.cameraRotate(keys[a].ry, 0.0f, 1.0f, 0.0f);
+              gldata.render.cameraRotate(keys[a].rz, 0.0f, 0.0f, 1.0f);
+              gldata.render.fovy = keys[a].fov;
               foundKey = true;
               //find next key and calc delta per frame (NOTE:keys are sorted)
               if (a == keys.length-1) {
@@ -1167,11 +1166,11 @@ public class ProjectPanel extends javax.swing.JPanel implements FFMPEGIO {
           for(int frame=0;frame<config.videoRate;frame++) {
             if (!foundKey) {
               if (delta) {
-                gldata.scene.cameraTranslate(delta_tx, delta_ty, delta_tz);
-                gldata.scene.cameraRotate(delta_rx, 1.0f, 0.0f, 0.0f);
-                gldata.scene.cameraRotate(delta_ry, 0.0f, 1.0f, 0.0f);
-                gldata.scene.cameraRotate(delta_rz, 0.0f, 0.0f, 1.0f);
-                gldata.scene.fovy += delta_fov;
+                gldata.render.cameraTranslate(delta_tx, delta_ty, delta_tz);
+                gldata.render.cameraRotate(delta_rx, 1.0f, 0.0f, 0.0f);
+                gldata.render.cameraRotate(delta_ry, 0.0f, 1.0f, 0.0f);
+                gldata.render.cameraRotate(delta_rz, 0.0f, 0.0f, 1.0f);
+                gldata.render.fovy += delta_fov;
               }
             } else {
               foundKey = false;
@@ -1193,8 +1192,8 @@ public class ProjectPanel extends javax.swing.JPanel implements FFMPEGIO {
               if (track.isCut()) cut = true;
             }  //track
             if (cut) continue;
-            ff.add_video(image.getBuffer());
-            ff.add_audio(audio);
+            ff.addVideo(image.getBuffer());
+            ff.addAudio(audio);
           }  //frame
         }  //second
         uninit3d();

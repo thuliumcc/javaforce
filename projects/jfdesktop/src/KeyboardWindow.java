@@ -20,7 +20,7 @@ public class KeyboardWindow extends javax.swing.JWindow implements ActionListene
     initComponents();
     setLayout(this);
     x11id = Linux.x11_get_id(this);
-    JFLog.log("Keyboard.window=0x" + Integer.toString(JF.atoi(x11id.toString()), 16));
+    JFLog.log("Keyboard.window=0x" + Long.toString(x11id, 16));
     Linux.x11_set_dock(x11id);
     initTable();
     hide.setIcon(IconCache.loadIcon("jfdesktop-keyboard-down"));
@@ -302,7 +302,7 @@ public class KeyboardWindow extends javax.swing.JWindow implements ActionListene
     private javax.swing.JButton z;
     // End of variables declaration//GEN-END:variables
 
-  private Object x11id;
+  private long x11id;
   private boolean symMode;  //symbol mode
   private Object[][] table;
 

@@ -11,13 +11,13 @@
             <properties/>
             <folders>
                 <source-folder>
-                    <label>Source Packages</label>
-                    <location>.</location>
+                    <label>src</label>
+                    <type>java</type>
+                    <location>src</location>
                     <encoding>windows-1252</encoding>
                 </source-folder>
                 <source-folder>
-                    <label>Source Packages</label>
-                    <type>java</type>
+                    <label>jfrecorddesktop</label>
                     <location>.</location>
                     <encoding>windows-1252</encoding>
                 </source-folder>
@@ -37,8 +37,8 @@
             <view>
                 <items>
                     <source-folder style="packages">
-                        <label>Source Packages</label>
-                        <location>.</location>
+                        <label>src</label>
+                        <location>src</location>
                     </source-folder>
                     <source-file>
                         <location>build.xml</location>
@@ -54,8 +54,8 @@
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
-                <package-root>.</package-root>
-                <classpath mode="compile">../../classes;../../jars/jna-platform.jar</classpath>
+                <package-root>src</package-root>
+                <classpath mode="compile">javaforce.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

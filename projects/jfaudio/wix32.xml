@@ -3,6 +3,7 @@
   <Product Id="*" UpgradeCode="{CBD3C745-FB94-4288-9344-E12571E4325D}" Version="0.14" Language="1033" Name="jfAudio" Manufacturer="Peter Quiring">
     <Package InstallerVersion="300" Compressed="yes"/>
     <Media Id="1" Cabinet="files.cab" EmbedCab="yes" />
+    <UIRef Id="WixUI_Minimal" />
 
     <Icon Id="icon.ico" SourceFile="jfaudio.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico"/>
@@ -23,8 +24,8 @@
       <Component Id="appfiles" Guid="{4817F9D3-7CF2-4624-8D4E-66BCE76F7A06}">
         <File Id="jfaudio.jar" Source="jfaudio.jar" KeyPath="yes"/>
         <File Id="javaforce.jar" Source="javaforce.jar"/>
-        <File Id="jna.jar" Source="jna.jar"/>
         <File Id="jfaudio.exe" Source="jfaudio.exe"/>
+        <File Id="jfnative32.dll" Source="jfnative32.dll"/>
       </Component>
     </DirectoryRef>
 

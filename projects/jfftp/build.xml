@@ -79,7 +79,7 @@
       </fileset>
       <fileset dir="../.." includes="license.txt"/>
     </zip>
-    <move file="jfftp-${version}.zip" todir="${user.home}/zips"/>
+    <move file="jfftp-${version}.zip" todir="${home}/release"/>
   </target>
 
   <target name="release-src" depends="" description="create release zip file">
@@ -101,7 +101,7 @@
         <include name="jf/stubs/*"/>
       </fileset>
     </zip>
-    <move file="jfftp-src-${version}.zip" todir="${user.home}/zips"/>
+    <move file="jfftp-src-${version}.zip" todir="${home}/release"/>
   </target>
 
   <!-- sudo ant install -->

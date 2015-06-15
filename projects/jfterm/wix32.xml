@@ -3,6 +3,7 @@
   <Product Id="*" UpgradeCode="{52E091EA-4753-4970-B56C-DA6EEEDC26DC}" Version="0.18" Language="1033" Name="jfTerm" Manufacturer="Peter Quiring">
     <Package InstallerVersion="300" Compressed="yes"/>
     <Media Id="1" Cabinet="files.cab" EmbedCab="yes" />
+    <UIRef Id="WixUI_Minimal" />
 
     <Icon Id="icon.ico" SourceFile="jfterm.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico"/>
@@ -25,8 +26,8 @@
         <File Id="javaforce.jar" Source="javaforce.jar"/>
         <File Id="jsch.jar" Source="jsch.jar"/>
         <File Id="jzlib.jar" Source="jzlib.jar"/>
-        <File Id="jna.jar" Source="jna.jar"/>
         <File Id="jfterm.exe" Source="jfterm.exe"/>
+        <File Id="jfnative32.dll" Source="jfnative32.dll"/>
       </Component>
     </DirectoryRef>
 

@@ -24,7 +24,7 @@
       </fileset>
       <fileset dir="../.." includes="license.txt"/>
     </zip>
-    <move file="jfdns-${version}.zip" todir="${user.home}/zips"/>
+    <move file="jfdns-${version}.zip" todir="${home}/release"/>
   </target>
 
   <!-- sudo ant install -->

@@ -26,7 +26,7 @@ public class MidiKeyboard extends javax.swing.JDialog implements Receiver {
       this.music = music;
     } else {
       this.music = new Music();
-      this.music.start(20, 40, true);  //20ms buffers, 40 channels max
+      this.music.start(20, 40);  //20ms buffers, 40 channels max
     }
     this.music.soundClear();
     Library.load();

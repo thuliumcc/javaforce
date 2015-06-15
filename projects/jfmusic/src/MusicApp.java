@@ -8,7 +8,7 @@
 import java.awt.*;
 
 import javaforce.*;
-import javaforce.jna.*;
+import javaforce.media.*;
 
 public class MusicApp extends javax.swing.JFrame {
 
@@ -27,11 +27,11 @@ public class MusicApp extends javax.swing.JFrame {
     JFImage icon = new JFImage();
     icon.loadPNG(this.getClass().getClassLoader().getResourceAsStream("jfmusic.png"));
     setIconImage(icon.getImage());
-    if (!FFMPEG.init()) {
-      if (!FFMPEG.download()) {
+    if (!MediaCoder.init()) {
+      if (!MediaCoder.download()) {
         System.exit(0);
       }
-      if (!FFMPEG.init()) {
+      if (!MediaCoder.init()) {
         System.exit(0);
       }
     }

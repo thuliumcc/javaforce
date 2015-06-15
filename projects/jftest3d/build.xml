@@ -10,7 +10,7 @@
 
   <import file="../../base.xml"/>
 
-  <target name="depjars">
+  <target name="depjars" depends="depnatives">
     <jar destfile="javaforce.jar">
       <zipfileset src="../../jars/javaforce.jar"/>
       <manifest>
@@ -19,17 +19,6 @@
         <attribute name="Codebase" value="javaforce.sourceforge.net"/>
       </manifest>
     </jar>
-    <jar destfile="jna.jar">
-      <zipfileset src="../../jars/jna.jar"/>
-      <manifest>
-        <attribute name="Trusted-Library" value="true"/>
-        <attribute name="Permissions" value="all-permissions"/>
-        <attribute name="Codebase" value="javaforce.sourceforge.net"/>
-      </manifest>
-    </jar>
-    <copy todir=".">
-      <fileset dir="${home}/native" includes="*"/>
-    </copy>
   </target>
 
   <target name="compile" depends="depjars" description="compile the source">

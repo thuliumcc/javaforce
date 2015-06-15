@@ -1,7 +1,7 @@
 <project name="javaforce-release" default="zip" basedir=".">
   <description>JavaForce release script</description>
 
-  <property name="VERSION" value="8.1.0"/>
+  <property name="VERSION" value="9.0.0"/>
   <property name="URL" value="http://javaforce.sourceforge.net"/>
   <property name="EMAIL" value="pquiring@gmail.com"/>
 
@@ -41,11 +41,11 @@
 
         <include name="jf/include/*"/>
 
-        <include name="jf/stubs/*"/>
-        <include name="jf/stubs/src/*"/>
+        <include name="jf/stubs/**/*"/>
 
-        <include name="jf/native/*"/>
-        <include name="jf/native/src/*"/>
+        <include name="jf/native/**/*"/>
+
+        <include name="jf/release/readme.txt"/>
 
         <include name="jf/repo/ubuntu/*.sh"/>
         <include name="jf/repo/ubuntu/*.txt"/>
@@ -74,6 +74,7 @@
 
         <exclude name="jf/src/javaforce/installer/**/*"/>  <!-- testing -->
 
+        <exclude name="**/*.h"/>
         <exclude name="**/sf/*"/>
         <exclude name="**/crx/*"/>
         <exclude name="jf/projects/jpbxlite/jpbxDB/**/*"/>
@@ -99,6 +100,7 @@
         <exclude name="**/*.log"/>
         <exclude name="**/*.ogg"/>
         <exclude name="**/*.zip"/>
+        <exclude name="**/*.7z"/>
         <exclude name="**/*.tmp"/>
         <exclude name="**/*.jar"/>
         <exclude name="**/*.class"/>
@@ -148,6 +150,6 @@
         <include name="jf/jars/*.txt"/>
       </fileset>
     </zip>
-    <move file="javaforce-${VERSION}.zip" todir="/home/pquiring/zips"/>
+    <move file="javaforce-${VERSION}.zip" todir="release"/>
   </target>
 </project>

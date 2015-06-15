@@ -25,7 +25,7 @@ import javax.swing.*;
 public class JF {
 
   public static String getVersion() {
-    return "8.1.0";
+    return "9.0.0";
   }
 
   public static void sleep(int milli) {
@@ -152,7 +152,8 @@ public class JF {
   /** Checks if system is Mac only. */
   public static boolean isMac() {
     if (!isUnix()) return false;
-    return new File("/mach_kernel").exists();
+    String osName = System.getProperty("os.name");
+    return osName.startsWith("Mac") || osName.startsWith("Darwin");
   }
 
   /** Checks if system is jfLinux only. */
@@ -1342,5 +1343,9 @@ public class JF {
     }
 
     return list.toArray(new String[list.size()]);
+  }
+
+  public static boolean is64Bit() {
+    return System.getProperty("sun.arch.data.model").equals("64");
   }
 }

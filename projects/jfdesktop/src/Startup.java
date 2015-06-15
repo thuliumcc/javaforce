@@ -7,7 +7,7 @@
 import java.io.*;
 
 import javaforce.*;
-import javaforce.jna.*;
+import javaforce.jni.*;
 import javaforce.linux.*;
 import static javaforce.linux.Linux.*;
 import javaforce.utils.*;
@@ -18,7 +18,6 @@ public class Startup {
     JFLog.init(JF.getUserPath() + "/.jfdesktop.log", true);
     Linux.init();
     monitordir.init();
-    Fuse.init();
     /* Setup display */
     Monitor cfg[] = Linux.x11_rr_load_user();
     cfg = Linux.x11_rr_get_setup(cfg);

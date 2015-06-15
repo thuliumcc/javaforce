@@ -6,7 +6,7 @@
 import java.util.*;
 import javax.swing.table.*;
 
-import jparted.*;
+import jfparted.*;
 import javaforce.*;
 
 public class GuidedPartitioning extends IPanel {

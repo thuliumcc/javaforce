@@ -24,9 +24,10 @@ public class GLCanvas extends Canvas {
   }
   public boolean init(GLInterface iface, GL shared) {
     this.iface = iface;
-    gl = GL.createComponent(this, iface, shared);
-    if (gl == null) return false;
+    gl = new GL(iface);
+    if (!gl.createComponent(this, shared)) return false;
     gl.makeCurrent();
+    gl.glInit();  //load GL functions if needed
     iface.init(gl, this);
     return true;
   }

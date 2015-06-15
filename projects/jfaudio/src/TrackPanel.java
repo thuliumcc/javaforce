@@ -690,7 +690,7 @@ public class TrackPanel extends javax.swing.JPanel {
     new Thread() {
       public void run() {
         long length = 0;
-        Sound.Input input = Sound.getInput(Settings.current.useNative);
+        AudioInput input = new AudioInput();
         input.listDevices();
         if (!input.start(Settings.current.channels, Settings.current.freq, bits, recBufSize, Settings.getInput())) {
           MainPanel.main.stop();
@@ -703,9 +703,7 @@ public class TrackPanel extends javax.swing.JPanel {
             JF.sleep(10);
             continue;
           }
-          if (input.getEndian() == Sound.BIG_ENDIAN) {
-            swapEndian(bits, samples);
-          }
+          swapEndian(bits, samples);
           int lvl = MainPanel.main.getRecordLevel();
           if (lvl < 100) {
             scaleBufferVolume(samples, bits, lvl);
@@ -726,7 +724,7 @@ public class TrackPanel extends javax.swing.JPanel {
     new Thread() {
       public void run() {
         int bufferSize = playBufferSize * bytes * channels;
-        Sound.Output output = Sound.getOutput(Settings.current.useNative);
+        AudioOutput output = new AudioOutput();
         output.listDevices();
         long offset = selectStart;
         boolean first = true;
@@ -750,9 +748,7 @@ public class TrackPanel extends javax.swing.JPanel {
           if (lvl != 100) {
             scaleBufferVolume(samples, bits, lvl);
           }
-          if (output.getEndian() == Sound.BIG_ENDIAN) {
-            swapEndian(bits, samples);
-          }
+          swapEndian(bits, samples);
           output.write(samples);
           offset += playBufferSize;
           if (first) {first = false; firstNumSamples = numSamples; continue;}
@@ -1070,7 +1066,7 @@ public class TrackPanel extends javax.swing.JPanel {
       }
       try {
         transcoder = new Transcoder();
-        transcoder.encoder.config_audio_bit_rate = transcoderBitRate * 1000;
+        transcoder.encoder.setAudioBitRate(transcoderBitRate * 1000);
         transcoderInFile = Paths.getTempFile("temp", ".wav");
         transcoderOutFile = fn;
         if (!exportWav(transcoderInFile.getAbsolutePath(), selection)) return;

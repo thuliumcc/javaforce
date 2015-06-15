@@ -1,6 +1,6 @@
 Package: jconfig
 Version: 0.12
-Architecture: all
+Architecture: amd64
 Maintainer: Peter Quiring <pquiring@jflinux.org>
 Installed-Size: 1
 Depends: javaforce (>= 6.1.0), jparted, japps, jrepo, libnss3-tools

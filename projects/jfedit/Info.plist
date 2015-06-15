@@ -7,7 +7,7 @@
 	<key>CFBundleGetInfoString</key>
 		<string>jfEdit 0.9</string>
 	<key>CFBundleIconFile</key>
-		<string>jfedit.png</string>
+		<string>jfedit.icns</string>
 	<key>CFBundleIdentifier</key>
 		<string>jfedit.sf.net</string>
 	<key>CFBundleInfoDictionaryVersion</key>

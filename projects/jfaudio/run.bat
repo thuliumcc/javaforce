@@ -1,1 +1,1 @@
-java -cp javaforce.jar;jna.jar;jfaudio.jar AudioApp %1
+java -cp javaforce.jar;jfaudio.jar AudioApp %1

@@ -27,7 +27,6 @@ import javax.crypto.*;
 import javax.crypto.spec.*;
 
 import javaforce.*;
-import javaforce.jbus.JBusClient;
 
 public class STUN {
   public static boolean SystemService = false;
@@ -802,24 +801,6 @@ public class STUN {
           if (active) JFLog.log(e);
         }
       }
-    }
-  }
-
-  //this is service entry, see STUNApp for user app entry
-  private static JBusClient jbusClient;
-  public static void main(String args[]) {
-    STUN.SystemService = true;
-    jbusClient = new JBusClient("org.jflinux.service.jstun", new JBusMethods());
-    jbusClient.start();
-    new STUN().start();
-  }
-  public static class JBusMethods {
-    //standard service methods
-    public void stop() {
-      System.exit(0);
-    }
-    public void status(String pack) {
-      jbusClient.call(pack, "serviceStatus", "\"jSTUN running:" + JF.getPID() + "\"");
     }
   }
 }

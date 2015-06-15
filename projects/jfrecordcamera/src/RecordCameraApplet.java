@@ -6,7 +6,7 @@
  */
 
 import javaforce.*;
-import javaforce.jna.*;
+import javaforce.media.*;
 
 public class RecordCameraApplet extends javax.swing.JApplet {
 
@@ -20,9 +20,9 @@ public class RecordCameraApplet extends javax.swing.JApplet {
       java.awt.EventQueue.invokeAndWait(new Runnable() {
         public void run() {
           initComponents();
-          if (!FFMPEG.init()) {
-            if (!FFMPEG.download()) return;
-            if (!FFMPEG.init()) return;  //try again after download
+          if (!MediaCoder.init()) {
+            if (!MediaCoder.download()) return;
+            if (!MediaCoder.init()) return;  //try again after download
           }
           setContentPane(new MainPanel());
         }

@@ -1,2 +1,2 @@
-java -cp javaforce.jar:jna.jar:jftest3d.jar TestApp $*
+java -cp javaforce.jar:jftest3d.jar TestApp $*
 

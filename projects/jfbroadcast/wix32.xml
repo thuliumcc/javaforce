@@ -3,6 +3,7 @@
   <Product Id="*" UpgradeCode="{261112D1-DA93-48DE-A284-AC430A8731D9}" Version="0.30" Language="1033" Name="jfBroadcast" Manufacturer="Peter Quiring">
     <Package InstallerVersion="300" Compressed="yes" />
     <Media Id="1" Cabinet="files.cab" EmbedCab="yes" />
+    <UIRef Id="WixUI_Minimal" />
 
     <Icon Id="icon.ico" SourceFile="jfbroadcast.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico"/>

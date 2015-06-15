@@ -12,33 +12,19 @@ package javaforce.utils;
 
 import java.util.*;
 
-import com.sun.jna.*;
-
 import javaforce.*;
+import javaforce.jni.*;
 
 
 public class monitordir {
   public static interface Listener {
     public void folderChangeEvent(String event, String path);
   }
-
-  public static interface C extends Library {
-    public int inotify_init();  //return fd
-    public int inotify_add_watch(int fd, String path, int mask);  //return wd
-    public int inotify_rm_watch(int fd, int wd);
-    public NativeLong read(int wd, Pointer ptr, NativeLong size);
-    public int close(int fd);
-    public Pointer malloc(int size);
-    public void free(Pointer ptr);
-  }
-  private static C c;
-  private static int fd;
   /** Loads native library.  Only need to call once per process. */
+  private static int fd;
   public static boolean init() {
-    if (c != null) return true;
     try {
-      c = (C)Native.loadLibrary("c", C.class);
-      fd = c.inotify_init();
+      fd = LnxNative.inotify_init();
       if (fd == -1) throw new Exception("inotify_init failed");
       new Worker().start();
       return true;
@@ -49,22 +35,18 @@ public class monitordir {
   }
   /** Stops all watches. */
   public static void uninit() {
-    if (c == null) return;
     active = false;
-    c.close(fd);
-    c = null;
+    LnxNative.inotify_close(fd);
   }
   /** Start watching a folder. */
   public static int add(String path) {
-    if (c == null) return -1;
-    int wd = c.inotify_add_watch(fd, path, IN_ALL);
+    int wd = LnxNative.inotify_add_watch(fd, path, IN_ALL);
 //    JFLog.log("wd=" + wd);
     return wd;
   }
   /** Stops watching a folder. */
   public static void remove(int wd) {
-    if (c == null) return;
-    c.inotify_rm_watch(fd, wd);
+    LnxNative.inotify_rm_watch(fd, wd);
     map.remove(wd);
   }
   private static boolean active = true;
@@ -82,22 +64,23 @@ public class monitordir {
     try { new Object().wait(); } catch (Exception e) {}  //wait forever
   }
   public static class Worker extends Thread {
-    Pointer buf;
     public void run() {
-      buf = c.malloc(1024);
 //      JFLog.log("worker start");
       while (active) {
-        NativeLong ret = c.read(fd, buf, new NativeLong(1024));
-        long read = ret.longValue();
-//        JFLog.log("read=" + read);
-        if (read <= 0) break;
-        while (read >= 16) {
-          int _wd = buf.getInt(0);
-          int _mask = buf.getInt(4);
-//          int _cookie = buf.getInt(8);
-          int _len = buf.getInt(12);
-          String _name = _len > 0 ? buf.getString(16) : null;
-          read -= 16 + _len;
+        byte data[] = LnxNative.inotify_read(fd);
+        int pos = 0;
+        int siz = data.length;
+        while (siz > 12) {
+          int _wd = LE.getuint32(data, pos);
+          pos += 4;
+          int _mask = LE.getuint32(data, pos);
+          pos += 4;
+          //cookie
+          pos += 4;
+          int _len = LE.getuint32(data, pos);
+          pos += 4;
+          String _name = _len > 0 ? LE.getString(data, pos, _len) : null;
+          siz -= 16 + _len;
           String _event = null;
           switch (_mask & IN_ALL) {
             case IN_CREATE: _event = "CREATED"; break;
@@ -117,7 +100,6 @@ public class monitordir {
         }
       }
 //      JFLog.log("worker end");
-      c.free(buf);
     }
   }
   private static final int IN_MOVED_FROM = 0x040;

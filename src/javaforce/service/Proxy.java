@@ -29,7 +29,6 @@ import java.net.*;
 import java.util.*;
 
 import javaforce.*;
-import javaforce.jbus.*;
 
 public class Proxy extends Thread {
 
@@ -589,25 +588,6 @@ public class Proxy extends Thread {
           }
         } catch (Exception e) {}
       }
-    }
-  }
-  //this is service entry, see ProxyApp for user app entry
-  private static JBusClient jbusClient;
-  public static void main(String args[]) {
-    Proxy.SystemService = true;
-    if (JF.isUnix()) {
-      jbusClient = new JBusClient("org.jflinux.service.jproxy", new JBusMethods());
-      jbusClient.start();
-    }
-    new Proxy().start();
-  }
-  public static class JBusMethods {
-    //standard service methods
-    public void stop() {
-      System.exit(0);
-    }
-    public void status(String pack) {
-      jbusClient.call(pack, "serviceStatus", "\"jProxy running:" + JF.getPID() + "\"");
     }
   }
 }

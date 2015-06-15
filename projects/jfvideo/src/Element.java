@@ -10,11 +10,11 @@ import java.io.*;
 import java.util.*;
 
 import javaforce.*;
-import javaforce.jna.*;
+import javaforce.media.*;
 
 import com.jhlabs.image.*;
 
-public class Element implements FFMPEGIO {
+public class Element implements MediaIO {
   public String path[];  //relative to user home
   public int type;
   public int offset;  //offset of element within Track
@@ -43,16 +43,7 @@ public class Element implements FFMPEGIO {
     fx = "";
   }
 
-  public int read(FFMPEG.Coder coder, byte[] bytes, int i) {
-    try {
-      return raf.read(bytes, 0, i);
-    } catch (Exception e) {
-      JFLog.log(e);
-    }
-    return 0;
-  }
-
-  public int write(FFMPEG.Coder coder, byte[] bytes) {
+  public int read(MediaCoder coder, byte[] bytes) {
     try {
       return raf.read(bytes, 0, bytes.length);
     } catch (Exception e) {
@@ -61,12 +52,21 @@ public class Element implements FFMPEGIO {
     return 0;
   }
 
-  public long seek(FFMPEG.Coder coder, long pos, int how) {
+  public int write(MediaCoder coder, byte[] bytes) {
+    try {
+      return raf.read(bytes, 0, bytes.length);
+    } catch (Exception e) {
+      JFLog.log(e);
+    }
+    return 0;
+  }
+
+  public long seek(MediaCoder coder, long pos, int how) {
     try {
       switch (how) {
-        case FFMPEG.SEEK_SET: break;  //seek set
-        case FFMPEG.SEEK_CUR: pos += raf.getFilePointer(); break;  //seek cur
-        case FFMPEG.SEEK_END: pos += raf.length(); break; //seek end
+        case MediaCoder.SEEK_SET: break;  //seek set
+        case MediaCoder.SEEK_CUR: pos += raf.getFilePointer(); break;  //seek cur
+        case MediaCoder.SEEK_END: pos += raf.length(); break; //seek end
       }
       raf.seek(pos);
     } catch (Exception e) {
@@ -92,7 +92,7 @@ public class Element implements FFMPEGIO {
   private boolean ready;
   private JFImage srcImage;
   private int width, height;
-  private FFMPEG.Decoder ff;
+  private MediaDecoder ff;
   private short audio[];
   private int audioPos, audioSize;
   private ArrayList<int[]> frames = new ArrayList<int[]>();
@@ -155,7 +155,7 @@ public class Element implements FFMPEGIO {
           JFLog.log(e);
           return false;
         }
-        ff = new FFMPEG.Decoder();
+        ff = new MediaDecoder();
         if (!ff.start(this, config.width, config.height, config.audioChannels, config.audioRate, true)) {
           JF.showError("Error", "Failed to decode file:" + path[0]);
           return false;
@@ -227,9 +227,9 @@ public class Element implements FFMPEGIO {
   private void readMore() {
     if (eof) return;
     switch (ff.read()) {
-      case FFMPEG.AUDIO_FRAME:
+      case MediaCoder.AUDIO_FRAME:
 //JFLog.log("AUDIO_FRAME");
-        short buf[] = ff.get_audio();
+        short buf[] = ff.getAudio();
         if (audioSize == 0) {
           audio = buf;
           audioSize = buf.length;
@@ -244,12 +244,12 @@ public class Element implements FFMPEGIO {
           audioSize += buf.length;
         }
         break;
-      case FFMPEG.VIDEO_FRAME:
+      case MediaCoder.VIDEO_FRAME:
 //JFLog.log("VIDEO_FRAME");
-        int px[] = ff.get_video();
+        int px[] = ff.getVideo();
         frames.add(px);
         break;
-      case FFMPEG.END_FRAME:
+      case MediaCoder.END_FRAME:
 //JFLog.log("END_FRAME");
         eof = true;
         break;
@@ -319,7 +319,7 @@ public class Element implements FFMPEGIO {
   }
 
   public void renderVideo(JFImage dstImage, int second, int frame) {
-    if (type == TYPE_SPECIAL_CUT) return;
+    if (type == TYPE_SPECIAL_CUT || type == TYPE_AUDIO) return;
     if (type == TYPE_SPECIAL_BLUR) {
       //apply blur to image
       applyBlur(dstImage, second, frame);

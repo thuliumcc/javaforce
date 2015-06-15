@@ -1,43 +1,72 @@
 package javaforce.media;
 
+import javaforce.JF;
+
+import javaforce.jni.JFNative;
+import javaforce.jni.LnxNative;
+import javaforce.jni.MacNative;
+import javaforce.jni.WinNative;
+
 /**
- * Common Camera (Native Code only)
+ * Web Camera API
  *
  * @author pquiring
  *
  * Created : Aug 20, 2013
  */
 
-import javaforce.*;
-import javaforce.jna.*;
-
 public class Camera {
-  public static interface Input {
-    public boolean init();
-    public boolean uninit();
-    public String[] listDevices();
-    public boolean start(int deviceIdx, int width, int height);
-    public boolean stop();
-    public int[] getFrame();
-    public int getWidth();
-    public int getHeight();
-  }
-  public static Input getInput() {
+  private long ctx = 0;
+  static {
+    JFNative.load();
     if (JF.isWindows()) {
-      return new WinCamera();
+      WinNative.load();
     } else if (JF.isMac()) {
-      return new MacCameraQT();
+      MacNative.load();
     } else {
-      return new LnxCamera();
+      LnxNative.load();
     }
   }
-/*
-  //not working yet!
-  private static Input getInputFFMPEG() {
-    if (FFMPEG.init()) {
-      return new FFMPEG.V4L2Camera();
-    }
-    return null;
+
+  //web camera (no context - only one use per app)
+  private native boolean cameraInit();
+  private native boolean cameraUninit();
+  private native String[] cameraListDevices();
+  private native boolean cameraStart(int deviceIdx, int width, int height);
+  private native boolean cameraStop();
+  private native int[] cameraGetFrame();
+  private native int cameraGetWidth();
+  private native int cameraGetHeight();
+
+  public boolean init() {
+    return cameraInit();
   }
-*/
+
+  public boolean uninit() {
+    return cameraUninit();
+  }
+
+  public String[] listDevices() {
+    return cameraListDevices();
+  }
+
+  public boolean start(int deviceIdx, int width, int height) {
+    return cameraStart(deviceIdx, width, height);
+  }
+
+  public boolean stop() {
+    return cameraStop();
+  }
+
+  public int[] getFrame() {
+    return cameraGetFrame();
+  }
+
+  public int getWidth() {
+    return cameraGetWidth();
+  }
+
+  public int getHeight() {
+    return cameraGetHeight();
+  }
 }

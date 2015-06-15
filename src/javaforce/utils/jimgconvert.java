@@ -6,7 +6,7 @@ public class jimgconvert {
   public static void main(String args[]) {
     if (args.length != 2) {
       System.out.println("Usage : jimgconvert filein fileout");
-      System.out.println("Suppports : jpg, png, bmp, ico(output only)");
+      System.out.println("Suppports : jpg, png, bmp, ico(output only), icns(ouput only)");
       return;
     }
     try {
@@ -30,6 +30,8 @@ public class jimgconvert {
         img.saveBMP(args[1]);
       } else if (outfmt.equals("ico")) {
         img.saveICO(args[1]);
+      } else if (outfmt.equals("icns")) {
+        img.saveICNS(args[1]);
       } else {
         throw new Exception("Unsupported input type:" + infmt);
       }

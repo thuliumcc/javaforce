@@ -10,17 +10,9 @@
 
   <import file="../../base.xml"/>
 
-  <target name="depjars">
+  <target name="depjars" depends="depnatives">
     <jar destfile="javaforce.jar">
       <zipfileset src="../../jars/javaforce.jar"/>
-      <manifest>
-        <attribute name="Trusted-Library" value="true"/>
-        <attribute name="Permissions" value="all-permissions"/>
-        <attribute name="Codebase" value="jf3d.sourceforge.net"/>
-      </manifest>
-    </jar>
-    <jar destfile="jna.jar">
-      <zipfileset src="../../jars/jna.jar"/>
       <manifest>
         <attribute name="Trusted-Library" value="true"/>
         <attribute name="Permissions" value="all-permissions"/>
@@ -34,9 +26,6 @@
     <mkdir dir="${build}"/>
     <javac srcdir="${src}" destdir="${build}" target="1.6" source="1.6" debug="true" includeantruntime="false">
       <classpath path="${classpath}"/>
-      <classpath>
-        <fileset dir="../../jars" includes="jna.jar"/>
-      </classpath>
     </javac>
   </target>
 
@@ -72,7 +61,7 @@
       </fileset>
       <fileset dir="../.." includes="license.txt"/>
     </zip>
-    <move file="jf3d-${version}-bin.zip" todir="${user.home}/zips"/>
+    <move file="jf3d-${version}-bin.zip" todir="${home}/release"/>
   </target>
 
   <target name="release-src" depends="" description="create release zip file">
@@ -91,11 +80,10 @@
         <include name="jf/projects/j3d/run.bat"/>
         <include name="jf/projects/j3d/nbproject/*.xml"/>
         <include name="jf/jars/javaforce.jar"/>
-        <include name="jf/jars/jna.jar"/>
         <include name="jf/stubs/*"/>
       </fileset>
     </zip>
-    <move file="jf3d-${version}-src.zip" todir="${user.home}/zips"/>
+    <move file="jf3d-${version}-src.zip" todir="${home}/release"/>
   </target>
 
   <target name="clean" description="deletes compiled files">

@@ -3,6 +3,7 @@
   <Product Id="*" UpgradeCode="{C048BDDC-BF09-446F-BF07-E703E5B5C629}" Version="0.18" Language="1033" Name="jfPaint" Manufacturer="Peter Quiring">
     <Package InstallerVersion="300" Compressed="yes" Platform="x64"/>
     <Media Id="1" Cabinet="files.cab" EmbedCab="yes" />
+    <UIRef Id="WixUI_Minimal" />
 
     <Icon Id="icon.ico" SourceFile="jfpaint.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico"/>

@@ -17,9 +17,9 @@ import javax.sound.midi.*;
 
 import javaforce.*;
 import javaforce.media.*;
-import javaforce.jna.*;
+import javaforce.jni.*;
 
-public class SongPanel extends javax.swing.JPanel implements Music.Listener, Receiver, FFMPEGIO {
+public class SongPanel extends javax.swing.JPanel implements Music.Listener, Receiver, MediaIO {
 
   /**
    * Creates new form MainPanel
@@ -1389,7 +1389,7 @@ public class SongPanel extends javax.swing.JPanel implements Music.Listener, Rec
   private boolean recording;
   private boolean recordingStarted;
   private boolean exporting;
-  private FFMPEG.Encoder ffmpeg;
+  private MediaEncoder ffmpeg;
   private RandomAccessFile exportFile;
 
   private void reset() {
@@ -1858,7 +1858,7 @@ public class SongPanel extends javax.swing.JPanel implements Music.Listener, Rec
 
   public void musicSamples(short samples[]) {
     if (exporting) {
-      ffmpeg.add_audio(samples);
+      ffmpeg.addAudio(samples);
     }
   }
 
@@ -1953,7 +1953,7 @@ public class SongPanel extends javax.swing.JPanel implements Music.Listener, Rec
 
   private void musicStart() {
     if (music.isRunning()) return;
-    music.start(20, 1, true);
+    music.start(20, 1);
     music.setListener(this);
   }
 
@@ -2254,26 +2254,26 @@ public class SongPanel extends javax.swing.JPanel implements Music.Listener, Rec
       return;
     }
     exporting = true;
-    ffmpeg = new FFMPEG.Encoder();
+    ffmpeg = new MediaEncoder();
     if (ext.equals("mp3")) {
       String bitRate = JF.getString("Enter bitrate (32-512)", "128");
       if (bitRate == null) bitRate = "128";
       int bits = JF.atoi(bitRate);
       if (bits < 32) bits = 32;
       if (bits > 512) bits = 512;
-      ffmpeg.config_audio_bit_rate = bits * 1024;
+      ffmpeg.setAudioBitRate(bits * 1024);
     }
     ffmpeg.start(this, -1, -1, -1, 2, 44100, ext, false, true);
     playSong();
   }
 
-//FFMPEGIO interface
+//MediaCoderIO interface
 
-  public int read(FFMPEG.Coder coder, byte[] bytes, int count) {
+  public int read(MediaCoder coder, byte[] bytes) {
     return 0;
   }
 
-  public int write(FFMPEG.Coder coder, byte[] bytes) {
+  public int write(MediaCoder coder, byte[] bytes) {
     try {
       exportFile.write(bytes);
     } catch (Exception e) {
@@ -2282,16 +2282,16 @@ public class SongPanel extends javax.swing.JPanel implements Music.Listener, Rec
     return bytes.length;
   }
 
-  public long seek(FFMPEG.Coder coder, long pos, int how) {
+  public long seek(MediaCoder coder, long pos, int how) {
     try {
       switch (how) {
-        case FFMPEG.SEEK_SET:
+        case MediaCoder.SEEK_SET:
           exportFile.seek(pos);
           break;
-        case FFMPEG.SEEK_CUR:
+        case MediaCoder.SEEK_CUR:
           exportFile.seek(exportFile.getFilePointer() + pos);
           break;
-        case FFMPEG.SEEK_END:
+        case MediaCoder.SEEK_END:
           exportFile.seek(exportFile.length() + pos);
           break;
       }

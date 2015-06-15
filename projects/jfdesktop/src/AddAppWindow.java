@@ -10,7 +10,7 @@ import javax.swing.*;
 
 import javaforce.*;
 
-import jfile.*;
+import jffile.*;
 
 public class AddAppWindow extends javax.swing.JFrame {
 

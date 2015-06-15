@@ -1,1 +1,1 @@
-java -cp javaforce.jar;jna.jar;jna-platform.jar;jfrecorddesktop.jar RecordDesktopApp %1
+java -cp javaforce.jar;jfrecorddesktop.jar RecordDesktopApp %1

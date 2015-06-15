@@ -17,7 +17,7 @@ import javaforce.jbus.*;
 import javaforce.linux.*;
 import javaforce.utils.*;
 
-import jfile.*;
+import jffile.*;
 
 public class Dock extends javax.swing.JWindow implements ActionListener, MouseListener, MouseMotionListener, LayoutManager, X11Listener, monitordir.Listener, FileClipboard {
 
@@ -32,7 +32,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
       loadNetworkIcons();
       dock = this;
       x11id = Linux.x11_get_id(this);
-      JFLog.log("Dock.window=0x" + Integer.toString(JF.atoi(x11id.toString()), 16));
+      JFLog.log("Dock.window=0x" + Long.toString(x11id, 16));
       try {
         Linux.x11_set_dock(x11id);
       } catch (Throwable t) {
@@ -554,7 +554,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   private java.util.Timer autoHideTimer;
   private JPopupMenu NetworkPopup = new JPopupMenu();
   public static Dock dock;
-  private Object x11id = null;
+  private long x11id;
   public static ArrayList<BlueToothDevice> btDevices = new ArrayList<BlueToothDevice>();
   private int buttonsCount = 0;  //# of app buttons shown in dock (pinned & !pinned)
   private String fileSelection = "";
@@ -585,9 +585,9 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   }
 
   private static class Window {
-    public Object xid;
+    public long xid;
     public String title;
-    public Window(Object xid, String title) {
+    public Window(long xid, String title) {
       this.xid = xid;
       this.title = title;
     }
@@ -599,17 +599,17 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
 
   private static class Group {
     public ArrayList<Window> windows = new ArrayList<Window>();
-    public void updateTitle(Object xid, String title) {
+    public void updateTitle(long xid, String title) {
       for(int a=0;a<windows.size();a++) {
         Window window = windows.get(a);
-        if (window.xid.equals(xid)) {
+        if (window.xid == xid) {
           window.title = title;
           return;
         }
       }
       addWindow(xid, title);
     }
-    public void addWindow(Object xid, String title) {
+    public void addWindow(long xid, String title) {
       windows.add(new Window(xid, title));
     }
     public void clearWindows() {
@@ -618,10 +618,10 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     public void removeWindow(int idx) {
       windows.remove(idx);
     }
-    public void removeWindow(Object xid) {
+    public void removeWindow(long xid) {
       for(int a=0;a<windows.size();a++) {
         Window window = windows.get(a);
-        if (window.xid.equals(xid)) {
+        if (window.xid == xid) {
           windows.remove(a);
           return;
         }
@@ -690,7 +690,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
           boolean window_ok = false;
           for(int w=0;w<winList.length;w++) {
             Linux.Window x11window = winList[w];
-            if (x11window.xid.equals(window.xid)) {group_ok = true; window_ok = true; break;}
+            if (x11window.xid == window.xid) {group_ok = true; window_ok = true; break;}
           }
           if (!window_ok) {
             group.removeWindow(g);
@@ -1857,7 +1857,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
 
   public void mouseClicked(MouseEvent me) {
     if (me.getSource() == buttons) {
-      if (x11id == null) return;
+      if (x11id == 0) return;
       try {
         x11_set_dock();
       } catch (Throwable t) {

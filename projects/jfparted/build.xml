@@ -5,12 +5,23 @@
   <property name="home" location="../.."/>
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
-  <property name="classpath" location="../../classes"/>
+  <property name="classpath" location="javaforce.jar"/>
   <property name="version" value="0.4"/>
 
   <import file="../../base.xml"/>
 
-  <target name="compile" description="compile the source">
+  <target name="depjars">
+    <jar destfile="javaforce.jar">
+      <zipfileset src="../../jars/javaforce.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfparted.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="compile" depends="depjars" description="compile the source">
     <!-- Compile the java code from ${src} into ${build} -->
     <echo>${user.dir}</echo>
     <mkdir dir="${build}"/>

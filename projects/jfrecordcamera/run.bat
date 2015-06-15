@@ -1,1 +1,1 @@
-java -cp javaforce.jar;jna.jar;jfrecordcamera.jar RecordCameraApp %1
+java -cp javaforce.jar;jfrecordcamera.jar RecordCameraApp %1

@@ -199,6 +199,7 @@ public class JFImage extends JComponent implements Icon {
   public boolean save(OutputStream out, String fmt) {
     if (fmt.equals("jpg")) return saveJPG(out);  //Must convert image type
     if (fmt.equals("ico")) return saveICO(out);  //ImageIO doesn't support ICO
+    if (fmt.equals("icns")) return saveICNS(out);  //ImageIO doesn't support ICNS
     if (fmt.equals("bmp")) return saveBMP(out);  //ImageIO doesn't support BMP (except Windows)
     try {
       return ImageIO.write(bi, fmt, out);
@@ -342,6 +343,77 @@ public class JFImage extends JComponent implements Icon {
     pixels = getPixels(0, 0, getWidth(), getHeight());
     Dimension size = new Dimension(getWidth(), getHeight());
     return bmp.save32(out, pixels, size, false, true);
+  }
+
+  /** save icns (Mac icon) */
+  public boolean saveICNS(String filename) {
+    try {
+      return saveICNS(new FileOutputStream(filename));
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  /** save icns (Mac icon) */
+  public boolean saveICNS(OutputStream out) {
+    //see http://en.wikipedia.org/wiki/Apple_Icon_Image_format
+    //use one of the PNG formats
+    byte header[] = new byte[4*4];
+    //scale image to one of supported sizes
+    int w = getWidth();
+    int h = getHeight();
+    if (w > h) h = w;
+    if (h > w) w = h;
+    int newSize = 16;
+    String OSType = "icp4";
+/*
+    if (w > 512) {
+      newSize = 1024;  //also retina 512x512@2x ???
+      OSType = "ic10";
+    }
+    else
+*/
+    if (w > 256) {
+      newSize = 512;
+      OSType = "ic09";
+    }
+    else if (w > 128) {
+      newSize = 256;
+      OSType = "ic08";
+    }
+    else if (w > 64) {
+      newSize = 128;
+      OSType = "ic07";
+    }
+    else if (w > 32) {
+      newSize = 64;
+      OSType = "icp6";
+    }
+    else if (w > 16) {
+      newSize = 32;
+      OSType = "icp5";
+    }
+    if (w != newSize || h != newSize) {
+//      System.out.println("Scaling icns to:" + newSize + "x" + newSize);
+      setResizeOperation(ResizeOperation.SCALE);
+      setSize(newSize, newSize);
+    }
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    savePNG(baos);
+//    System.out.println("png.size=" + baos.size());
+    System.arraycopy("icns".getBytes(), 0, header, 0, 4);  //file header "icns"
+    BE.setuint32(header, 4, 4*4 + baos.size());  //file size
+    System.arraycopy(OSType.getBytes(), 0, header, 8, 4);  //image type
+    BE.setuint32(header, 12, 4*2 + baos.size());  //image size
+
+    try {
+      out.write(header);
+      out.write(baos.toByteArray());
+    } catch (Exception e) {
+      return false;
+    }
+
+    return true;
   }
 
   public boolean loadSVG(String filename) {

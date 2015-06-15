@@ -13,7 +13,7 @@ import javax.swing.table.*;
 
 import javaforce.*;
 import javaforce.jbus.*;
-import javaforce.jna.*;
+import javaforce.jni.*;
 import javaforce.media.*;
 
 public class MainPanel extends javax.swing.JPanel implements ActionListener {
@@ -314,7 +314,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
   private XML.XMLTag library, playlists, media;
   private XML.XMLTag music, video;  //library sub-tags
   private ArrayList<String> tableFiles = new ArrayList<String>();
-  private FFMPEG.Decoder decoder;  //ffmpeg decoder
+  private MediaDecoder decoder;  //ffmpeg decoder
   private long frameCount;
   private long audioCount;
   private final Object countLock = new Object();
@@ -393,6 +393,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
     if (fn.endsWith(".3gp")) return true;
     if (fn.endsWith(".h263")) return true;
     if (fn.endsWith(".h264")) return true;
+    if (fn.endsWith(".webm")) return true;
     return false;
   }
 
@@ -723,7 +724,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
   final int buffer_seconds = 4;
   final int pre_buffer_seconds = 2;
 
-  public class ReadThread extends Thread implements FFMPEGIO {
+  public class ReadThread extends Thread implements MediaIO {
     private String file;
     int m_in;  //input data
     int m_out[] = new int[4];  //output data
@@ -746,7 +747,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
       preBuffering = true;
 
       try {
-        decoder = new FFMPEG.Decoder();
+        decoder = new MediaDecoder();
         if (decoder == null) throw new Exception("Unable to allocate decoder");
         raf = new RandomAccessFile(file, "r");
         System.out.println("file=" + file);
@@ -826,12 +827,12 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
             }
           }
           switch (decoder.read()) {
-            case FFMPEG.AUDIO_FRAME:  //audio packet read
-              short audio[] = decoder.get_audio();
+            case MediaCoder.AUDIO_FRAME:  //audio packet read
+              short audio[] = decoder.getAudio();
               audio_buffer.add(audio, 0, audio.length);
               break;
-            case FFMPEG.VIDEO_FRAME:  //video packet read
-              int video[] = decoder.get_video();
+            case MediaCoder.VIDEO_FRAME:  //video packet read
+              int video[] = decoder.getVideo();
               JFImage img = video_buffer.getNewFrame();
               if (img != null) {
                 if ((img.getWidth() != width) || (img.getHeight() != height)) {
@@ -843,7 +844,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
                 JFLog.log("Warning : VideoBuffer overflow");
               }
               break;
-            case FFMPEG.END_FRAME:
+            case MediaCoder.END_FRAME:
               eof = true;
               break;
           }
@@ -872,10 +873,10 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
       decoder = null;
       JFLog.log("read thread exit");
     }
-    public int read(FFMPEG.Coder coder, byte data[], int size) {
+    public int read(MediaCoder coder, byte data[]) {
       int read = 0;
       try {
-        read = raf.read(data, 0, size);
+        read = raf.read(data, 0, data.length);
       } catch (Exception e) {
         JFLog.log(e);
         return read;
@@ -883,16 +884,17 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
       if (read == -1) read = 0;
       return read;
     }
-    public int write(FFMPEG.Coder coder, byte data[]) {
+    public int write(MediaCoder coder, byte data[]) {
 //    jfmedia does not create media files
       return 0;
     }
-    public long seek(FFMPEG.Coder coder, long pos, int how) {
+    public long seek(MediaCoder coder, long pos, int how) {
+      long opos = pos;
       try {
         switch (how) {
-          case FFMPEG.SEEK_SET: break;  //seek set
-          case FFMPEG.SEEK_CUR: pos += raf.getFilePointer(); break;  //seek cur
-          case FFMPEG.SEEK_END: pos += raf.length(); break; //seek end
+          case MediaCoder.SEEK_SET: break;  //seek set
+          case MediaCoder.SEEK_CUR: pos += raf.getFilePointer(); break;  //seek cur
+          case MediaCoder.SEEK_END: pos += raf.length(); break; //seek end
         }
         raf.seek(pos);
       } catch (Exception e) {
@@ -907,7 +909,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
       double samplesPerFrame = (44100.0 * ((double)chs)) / fps;
       JFLog.log("samplesPerFrame=" + samplesPerFrame);
       double samplesToWrite = 0;
-      Sound.Output output = Sound.getOutput(true);
+      AudioOutput output = new AudioOutput();
       output.start(chs, 44100, 16, audio_bufsiz * 2 /*bytes*/, "<default>");
       short samples[] = new short[audio_bufsiz];
       double current = System.currentTimeMillis();
@@ -967,7 +969,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
       double frameDelay = 1000.0 / ((44100.0 * chs) / (audio_bufsiz));
       double samplesPerFrame = audio_bufsiz;
       double samplesToWrite = 0;
-      Sound.Output output = Sound.getOutput(true);
+      AudioOutput output = new AudioOutput();
       output.start(chs, 44100, 16, audio_bufsiz * 2 /*bytes*/, "<default>");
       short samples[] = new short[audio_bufsiz];
       double current = System.currentTimeMillis();

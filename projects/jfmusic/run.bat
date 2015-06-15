@@ -1,1 +1,1 @@
-java -cp javaforce.jar;jna.jar;jfmusic.jar MusicApp %1
+java -cp javaforce.jar;jfmusic.jar MusicApp %1

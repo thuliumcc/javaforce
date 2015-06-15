@@ -5,7 +5,7 @@
  * @author pquiring
  */
 
-import jparted.*;
+import jfparted.*;
 
 import javaforce.*;
 

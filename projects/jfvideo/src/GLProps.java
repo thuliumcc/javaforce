@@ -290,6 +290,7 @@ public class GLProps extends javax.swing.JPanel implements GLInterface, KeyListe
   GLScene scene;
   GLModel model;
   GLObject object;
+  GLRender render;
   JFImage image;
   java.util.Timer timer;
 
@@ -330,24 +331,29 @@ public class GLProps extends javax.swing.JPanel implements GLInterface, KeyListe
   public void init(GL gl, Component cmp) {
     JFLog.log("GLProps.init()");
     scene = new GLScene();
-    scene.init(gl, canvas.getWidth(), canvas.getHeight(), VertexShader.source, FragmentShader.source);
+    scene.init(gl, GLVertexShader.source, GLFragmentShader.source);
+    render = new GLRender();
+    render.init(scene, canvas.getWidth(), canvas.getHeight());
     model = new GLModel();
     scene.addModel(model);
     object = new GLObject();
     model.addObject(object);
+    model.addTexture("0");
     //need to calc based on w,h,fov
     float z = 5.0f;
     float x = 2.0f;
     float y = 2.0f;
+    GLUVMap map = object.createUVMap();
+    map.textureIndex = 0;
+    map.texloaded = true;  //direct loaded
     object.addVertex(new float[] {-x,-y,-z}, new float[] {0,1});
     object.addVertex(new float[] {+x,-y,-z}, new float[] {1,1});
     object.addVertex(new float[] {-x,+y,-z}, new float[] {0,0});
     object.addVertex(new float[] {+x,+y,-z}, new float[] {1,0});
     object.addPoly(new int[] {0,3,2});
     object.addPoly(new int[] {0,1,3});
-    object.texidx = 0;
     object.copyBuffers(gl);
-    scene.setTexture(0, image.getPixels(), image.getWidth(), image.getHeight());
+    scene.setTexture("0", image.getPixels(), image.getWidth(), image.getHeight(), 0);
     x = Float.valueOf(tx.getText());
     y = Float.valueOf(ty.getText());
     z = Float.valueOf(tz.getText());
@@ -376,12 +382,13 @@ public class GLProps extends javax.swing.JPanel implements GLInterface, KeyListe
     z = Float.valueOf(tz.getText());
     model.translate(x,y,z);
     x = Float.valueOf(fov.getText());
-    scene.fovy = x;
-    scene.render(gl);
+    render.fovy = x;
+    render.render(gl);
+    gl.swap();
   }
 
   public void resize(GL gl, int width, int height) {
-    scene.resize(width, height);
+    render.resize(width, height);
   }
 
   private static float delta = 0.1f;

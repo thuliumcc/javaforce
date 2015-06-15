@@ -8,11 +8,11 @@
 import java.io.*;
 
 import javaforce.*;
-import javaforce.jna.*;
+import javaforce.media.*;
 
-public class Transcoder implements FFMPEGIO {
-  FFMPEG.Encoder encoder = new FFMPEG.Encoder();
-  FFMPEG.Decoder decoder = new FFMPEG.Decoder();
+public class Transcoder implements MediaIO {
+  MediaEncoder encoder = new MediaEncoder();
+  MediaDecoder decoder = new MediaDecoder();
   RandomAccessFile fin, fout;
   public boolean transcode(String in, String out, String outCodec) {
     int chs, freq;
@@ -27,11 +27,11 @@ public class Transcoder implements FFMPEGIO {
       short samples[];
       while (true) {
         int type = decoder.read();
-        if (type == FFMPEG.NULL_FRAME) continue;  //metadata
-        if (type == FFMPEG.END_FRAME) break;  //end of data
-        samples = decoder.get_audio();
+        if (type == MediaCoder.NULL_FRAME) continue;  //metadata
+        if (type == MediaCoder.END_FRAME) break;  //end of data
+        samples = decoder.getAudio();
         if (samples == null) break;
-        encoder.add_audio(samples);
+        encoder.addAudio(samples);
       }
       decoder.stop();
       encoder.stop();
@@ -44,10 +44,10 @@ public class Transcoder implements FFMPEGIO {
     return true;
   }
 
-  public int read(FFMPEG.Coder coder, byte[] bytes, int length) {
+  public int read(MediaCoder coder, byte[] bytes) {
     if (coder == decoder) {
       try {
-        return fin.read(bytes, 0, length);
+        return fin.read(bytes, 0, bytes.length);
       } catch (Exception e) {
         JFLog.log(e);
         return 0;
@@ -56,7 +56,7 @@ public class Transcoder implements FFMPEGIO {
     return 0;
   }
 
-  public int write(FFMPEG.Coder coder, byte[] bytes) {
+  public int write(MediaCoder coder, byte[] bytes) {
     if (coder == encoder) {
       try {
         fout.write(bytes);
@@ -69,13 +69,13 @@ public class Transcoder implements FFMPEGIO {
     return 0;
   }
 
-  public long seek(FFMPEG.Coder coder, long pos, int how) {
+  public long seek(MediaCoder coder, long pos, int how) {
     if (coder == decoder) {
       try {
         switch (how) {
-          case FFMPEG.SEEK_SET: break;
-          case FFMPEG.SEEK_CUR: pos += fin.getFilePointer(); break;
-          case FFMPEG.SEEK_END: pos += fin.length(); break;
+          case MediaCoder.SEEK_SET: break;
+          case MediaCoder.SEEK_CUR: pos += fin.getFilePointer(); break;
+          case MediaCoder.SEEK_END: pos += fin.length(); break;
         }
         fin.seek(pos);
         return pos;
@@ -86,9 +86,9 @@ public class Transcoder implements FFMPEGIO {
     } else if (coder == encoder) {
       try {
         switch (how) {
-          case FFMPEG.SEEK_SET: break;
-          case FFMPEG.SEEK_CUR: pos += fout.getFilePointer(); break;
-          case FFMPEG.SEEK_END: pos += fout.length(); break;
+          case MediaCoder.SEEK_SET: break;
+          case MediaCoder.SEEK_CUR: pos += fout.getFilePointer(); break;
+          case MediaCoder.SEEK_END: pos += fout.length(); break;
         }
         fout.seek(pos);
         return pos;

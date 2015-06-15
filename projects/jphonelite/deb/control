@@ -1,6 +1,6 @@
 Package: jphonelite
 Version: 1.9.4
-Architecture: all
+Architecture: amd64
 Maintainer: Peter Quiring <pquiring@jflinux.org>
 Installed-Size: 1
 Depends: javaforce (>= 6.14.0)

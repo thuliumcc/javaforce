@@ -8,10 +8,10 @@ package javaforce.utils;
 
 import java.io.*;
 
-import com.sun.jna.*;
-
 import javaforce.*;
-import javaforce.jna.*;
+import javaforce.jni.*;
+import javaforce.jni.lnx.*;
+
 
 public class jfuseftp extends Fuse {
   protected String user, server;  //user@server
@@ -48,7 +48,6 @@ public class jfuseftp extends Fuse {
   }
 
   public void main2(String args[]) {
-    if (!init()) return;
     try {
       //auth first
       System.out.print("Password:");
@@ -57,7 +56,7 @@ public class jfuseftp extends Fuse {
       if (!auth(args, passwd)) throw new Exception("bad password");
       System.out.println("Ok");
       System.out.flush();
-      start(args);
+      LnxNative.fuse(args, this);
     } catch (Exception e) {
       JFLog.log("Error:" + e);
     }
@@ -66,7 +65,7 @@ public class jfuseftp extends Fuse {
   //drwxrwxrwx   ? <user  > <user  > <size       > MMM DD  YYYY <name...>
   //0123456789012345678901234567890123456789012345678901234567890
 
-  public int getattr(String path, Stat stat) {
+  public int getattr(String path, FuseStat stat) {
 //    JFLog.log("getattr:" + path);
     try {
       String ln = ftp.ls(path);
@@ -160,13 +159,13 @@ public class jfuseftp extends Fuse {
     InputStream is;
   }
 
-  public int open(String path, Pointer ffi) {
+  public int open(String path, int mode, int fd) {
 //    JFLog.log("open:" + path);
     try {
       String ln = ftp.ls(path);
       if (ln.charAt(0) == 'd') throw new Exception("not a file");
       FileState fs = new FileState();
-      attachObject(ffi, fs);
+      attachObject(fd, fs);
       return 0;
     } catch (Exception e) {
       JFLog.log(e);
@@ -174,9 +173,10 @@ public class jfuseftp extends Fuse {
     }
   }
 
-  public int read(String path, Pointer buf, int size, long offset, Pointer ffi) {
+  public int read(String path, byte buf[], long offset, int fd) {
+    int size = buf.length;
 //    JFLog.log("read:" + path);
-    FileState fs = (FileState)getObject(ffi);
+    FileState fs = (FileState)getObject(fd);
     if (fs == null) {
       JFLog.log("no fs");
       return -1;
@@ -214,9 +214,10 @@ public class jfuseftp extends Fuse {
     }
   }
 
-  public int write(String path, Pointer buf, int size, long offset, Pointer ffi) {
+  public int write(String path, byte buf[], long offset, int fd) {
+    int size = buf.length;
 //    JFLog.log("write:" + path);
-    FileState fs = (FileState)getObject(ffi);
+    FileState fs = (FileState)getObject(fd);
     if (fs == null) {
 //      JFLog.log("fs null");
       return -1;
@@ -225,8 +226,6 @@ public class jfuseftp extends Fuse {
 //      JFLog.log("write after read");
       return -1;
     }
-    byte data[] = new byte[size];
-    buf.read(0, data, 0, size);
     try {
       if (!fs.writing) {
         if (offset != 0) throw new Exception("write not from start of file");
@@ -239,7 +238,7 @@ public class jfuseftp extends Fuse {
       } else {
         if (fs.pos != offset) throw new Exception("write not sequential");
       }
-      fs.os.write(data);
+      fs.os.write(buf);
       fs.pos += size;
       return size;
     } catch (Exception e) {
@@ -248,14 +247,14 @@ public class jfuseftp extends Fuse {
     }
   }
 
-  public int statfs(String path, Pointer statvfs) {
+  public int statfs(String path) {
 //    JFLog.log("statfs:" + path);
     return -1;
   }
 
-  public int release(String path, Pointer ffi) {
+  public int close(String path, int fd) {
 //    JFLog.log("release:" + path);
-    FileState fs = (FileState)getObject(ffi);
+    FileState fs = (FileState)getObject(fd);
     try {
       if (fs != null) {
         if (fs.reading) {
@@ -274,27 +273,28 @@ public class jfuseftp extends Fuse {
     } catch (Exception e) {
       JFLog.log(e);
     }
-    detachObject(ffi);
+    detachObject(fd);
     return 0;
   }
 
-  public int readdir(String path, Pointer buf, Pointer filler, Pointer ffi) {
+  public String[] readdir(String path) {
 //    JFLog.log("readdir:" + path);
     if (!path.endsWith("/")) path += "/";
     try {
       String dir = ftp.ls(path);
       String lns[] = dir.split("\n");
+      String ret[] = new String[lns.length];
       for(int a=0;a<lns.length;a++) {
-        invokeFiller(filler, buf, lns[a].substring(100), null);
+        ret[a] = lns[a].substring(100);
       }
-      return 0;
+      return ret;
     } catch (Exception e) {
       JFLog.log(e);
-      return -1;
+      return null;
     }
   }
 
-  public int create(String path, int mode, Pointer ffi) {
+  public int create(String path, int mode, int fd) {
 //    JFLog.log("create:" + path);
     return 0;
   }

@@ -15,9 +15,6 @@
     <mkdir dir="${build}"/>
     <javac srcdir="${src}" destdir="${build}" target="1.6" source="1.6" debug="true" includeantruntime="false">
       <classpath path="${classpath}"/>
-      <classpath>
-        <fileset dir="../../jars" includes="jna.jar"/>
-      </classpath>
     </javac>
   </target>
 
@@ -41,7 +38,7 @@
       </fileset>
       <fileset dir="../.." includes="license.txt"/>
     </zip>
-    <move file="jfnettools-${version}.zip" todir="${user.home}/zips"/>
+    <move file="jfnettools-${version}.zip" todir="${home}/release"/>
   </target>
 
   <target name="release-src" depends="" description="create release zip file">
@@ -56,7 +53,7 @@
         <include name="jf/projects/jnettools/nbproject/*.xml"/>
       </fileset>
     </zip>
-    <move file="jfnettools-${version}-src.zip" todir="${user.home}/zips"/>
+    <move file="jfnettools-${version}-src.zip" todir="${home}/release"/>
   </target>
 
   <target name="clean" description="deletes compiled files">

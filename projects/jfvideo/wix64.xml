@@ -3,6 +3,7 @@
   <Product Id="*" UpgradeCode="{6AF99921-3E43-4042-A825-61EBF9145366}" Version="0.17" Language="1033" Name="jfVideo" Manufacturer="Peter Quiring">
     <Package InstallerVersion="300" Compressed="yes" Platform="x64"/>
     <Media Id="1" Cabinet="files.cab" EmbedCab="yes" />
+    <UIRef Id="WixUI_Minimal" />
 
     <Icon Id="icon.ico" SourceFile="jfvideo.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico"/>
@@ -23,9 +24,9 @@
       <Component Id="appfiles" Guid="{2E689824-90DF-49BD-9C52-11627C1F93F1}" Win64="yes">
         <File Id="jfvideo.jar" Source="jfvideo.jar" KeyPath="yes"/>
         <File Id="javaforce.jar" Source="javaforce.jar"/>
-        <File Id="jna.jar" Source="jna.jar"/>
         <File Id="filters.jar" Source="filters.jar"/>
         <File Id="jfvideo.exe" Source="jfvideo.exe"/>
+        <File Id="jfnative64.dll" Source="jfnative64.dll"/>
       </Component>
     </DirectoryRef>
 

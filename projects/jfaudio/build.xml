@@ -10,17 +10,9 @@
 
   <import file="../../base.xml"/>
 
-  <target name="depjars">
+  <target name="depjars" depends="depnatives">
     <jar destfile="javaforce.jar">
       <zipfileset src="../../jars/javaforce.jar"/>
-      <manifest>
-        <attribute name="Trusted-Library" value="true"/>
-        <attribute name="Permissions" value="all-permissions"/>
-        <attribute name="Codebase" value="${app}.sourceforge.net"/>
-      </manifest>
-    </jar>
-    <jar destfile="jna.jar">
-      <zipfileset src="../../jars/jna.jar"/>
       <manifest>
         <attribute name="Trusted-Library" value="true"/>
         <attribute name="Permissions" value="all-permissions"/>
@@ -34,9 +26,6 @@
     <mkdir dir="${build}"/>
     <javac srcdir="${src}" destdir="${build}" target="1.6" source="1.6" debug="true" includeantruntime="false">
       <classpath path="${classpath}"/>
-      <classpath>
-        <fileset dir="../../jars" includes="jna.jar"/>
-      </classpath>
     </javac>
   </target>
 
@@ -64,7 +53,7 @@
     <copy file="${app}.html" todir="/usr/share/jhelp"/>
   </target>
 
-  <target name="release-bin" depends="sign-jar" description="create release zip file">
+  <target name="release-bin" description="create release zip file">
     <zip destfile="${app}-${version}.zip">
       <fileset dir=".">
         <include name="*.jar"/>
@@ -73,7 +62,7 @@
       </fileset>
       <fileset dir="../.." includes="license.txt"/>
     </zip>
-    <move file="${app}-${version}-bin.zip" todir="${user.home}/zips"/>
+    <move file="${app}-${version}-bin.zip" todir="${home}/release"/>
   </target>
 
   <target name="release-src" depends="" description="create release zip file">
@@ -91,11 +80,10 @@
         <include name="jf/projects/{$app}/run.bat"/>
         <include name="jf/projects/{$app}/nbproject/*.xml"/>
         <include name="jf/jars/javaforce.jar"/>
-        <include name="jf/jars/jna.jar"/>
         <include name="jf/stubs/*"/>
       </fileset>
     </zip>
-    <move file="{$app}-${version}-src.zip" todir="${user.home}/zips"/>
+    <move file="{$app}-${version}-src.zip" todir="${home}/release"/>
   </target>
 
   <target name="clean" description="deletes compiled files">

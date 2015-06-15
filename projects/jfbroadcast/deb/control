@@ -1,6 +1,6 @@
 Package: jfbroadcast
 Version: 0.30
-Architecture: all
+Architecture: amd64
 Maintainer: Peter Quiring <pquiring@jflinux.org>
 Installed-Size: 1
 Depends: javaforce (>= 6.0.0), libderby-java

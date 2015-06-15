@@ -1,7 +1,7 @@
 JavaForce SDK
 =============
 
-Version 8.1.0
+Version 9.0.0
 
 What is it?
 ===========
@@ -59,22 +59,38 @@ Building
 ========
 All projects are built with Apache Ant (available at http://ant.apache.org).
 Make sure to run ant in the main folder to build the /src folder and then in any of the apps in /projects.
+If building on Windows make sure to copy /native/*.dll to /windwos/system32 since some of the
+build tools require them.
+
+Common Ant tasks:
+-----------------
+compile : compile projects java files
+jar : build the projects main jar file
+depjars : copy dependant jar files into project folder
+install : install files into proper folders (Linux only : "sudo ant install")
+deb : build Ubuntu deb file (after install)
+rpm : build Fedora rpm file (after install)
+msi32 : build Windows msi file (32bit)
+msi64 : build Windows msi file (64bit)
+dmg : build Mac dmg file (mac only)
+genisodmg : build Mac dmg file (cygwin/linux/mac) (uncompressed)
+javadoc : create javadoc api help files (open ./javadoc/index.html)
 
 3rd party
 =========
 All third party dependancies are in /jars
 
-Javadoc
-=======
-You can run 'ant javadoc' to create /javadoc and load index.html to view them.
-
 License
 =======
 JavaForce itself is licensed under the LGPL license which can be read in license.txt.
+The MSI installers show the Common Public License 1.0 which is acceptable as well.
 The other jars in /jars may each have their own licensing.
-  filters.jar - jhlabs.com - Apache License 2.0
-  jna*.jar - LGPL 2.1 and Apache License 2.0
-  bouncycastle.jar - http://www.bouncycastle.org/licence.html
+  filters.jar - Apache License 2.0 (jhlabs.com)
+  bouncycastle.jar - MIT license? (www.bouncycastle.org)
+  derby.jar - Apache License 2.0 (db.apache.com/derby)
+  jcifs.jar - LGPL (jcifs.samba.org)
+  jsp-api.jar & servlet-api.jar - Apache License 2.0 (tomcat.apache.com)
+  jsch.jar & jzlib.jar - BSD license (www.jcraft.com)
 
 Enjoy!
 
@@ -83,7 +99,7 @@ pquiring@gmail.com
 
 http://javaforce.sourceforge.net
 
-Version 8.1.0
+Version 9.0.0
 
-Released : May 23 2015
+Released : June 9 2015
 

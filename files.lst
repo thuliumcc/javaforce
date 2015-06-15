@@ -1,6 +1,4 @@
 /usr/share/java/javaforce.jar
-/usr/share/java/jna.jar
-/usr/share/java/jna-platform.jar
 /usr/share/java/bouncycastle.jar
 /usr/share/java/filters.jar
 /usr/bin/jbus-call
@@ -27,3 +25,4 @@
 /usr/bin/jrm
 /usr/bin/jver
 /usr/bin/jimgconvert
+/usr/lib/jfnative64.so

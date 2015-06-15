@@ -3,6 +3,7 @@
   <Product Id="*" UpgradeCode="{C9228ACC-4833-4BE2-A121-C7617A2130F2}" Version="0.10" Language="1033" Name="jfMedia" Manufacturer="Peter Quiring">
     <Package InstallerVersion="300" Compressed="yes" Platform="x64"/>
     <Media Id="1" Cabinet="files.cab" EmbedCab="yes" />
+    <UIRef Id="WixUI_Minimal" />
 
     <Icon Id="icon.ico" SourceFile="jfmedia.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico"/>
@@ -23,8 +24,8 @@
       <Component Id="appfiles" Guid="{7CE54F00-3334-4DF5-8B68-4A9061A6B107}" Win64="yes">
         <File Id="jfmedia.jar" Source="jfmedia.jar" KeyPath="yes"/>
         <File Id="javaforce.jar" Source="javaforce.jar"/>
-        <File Id="jna.jar" Source="jna.jar"/>
         <File Id="jfmedia.exe" Source="jfmedia.exe"/>
+        <File Id="jfnative64.dll" Source="jfnative64.dll"/>
       </Component>
     </DirectoryRef>
 

@@ -18,7 +18,6 @@ import java.net.*;
 import java.util.*;
 
 import javaforce.*;
-import javaforce.jbus.JBusClient;
 
 public class DNS extends Thread {
   public static boolean SystemService = false;
@@ -385,23 +384,6 @@ public class DNS extends Thread {
     private void putInt(int value) {
       replyBuffer.putInt(replyOffset, value);
       replyOffset += 4;
-    }
-  }
-  //this is service entry, see DNSApp for user app entry
-  private static JBusClient jbusClient;
-  public static void main(String args[]) {
-    DNS.SystemService = true;
-    jbusClient = new JBusClient("org.jflinux.service.jdns", new JBusMethods());
-    jbusClient.start();
-    new DNS().start();
-  }
-  public static class JBusMethods {
-    //standard service methods
-    public void stop() {
-      System.exit(0);
-    }
-    public void status(String pack) {
-      jbusClient.call(pack, "serviceStatus", "\"jDNS running:" + JF.getPID() + "\"");
     }
   }
 }

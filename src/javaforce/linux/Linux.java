@@ -9,10 +9,8 @@ package javaforce.linux;
 import java.util.*;
 import java.io.*;
 
-import com.sun.jna.*;
-import com.sun.jna.ptr.*;
-
 import javaforce.*;
+import javaforce.jni.*;
 
 /**
  * Common functions for Linux administration.
@@ -22,7 +20,7 @@ public class Linux {
 
   /** Returns jfLinux ISO version. */
   public static String getVersion() {
-    return "7u2";
+    return "9";
   }
 
   public static enum DistroTypes {
@@ -672,94 +670,6 @@ public class Linux {
     }
   }
 
-  //use jna here to access native libraries
-
-  //NOTE:in c++ the 'long' is 32 or 64bits (in Linux) so I use a Pointer which will be the same size
-  private static interface X11 extends Library {
-    Pointer XOpenDisplay(Pointer ptr);
-    int DefaultScreen(Pointer ptr);
-    NativeLong RootWindow(Pointer ptr, int screen);
-    void XCloseDisplay(Pointer ptr);
-    int XFetchName(Pointer ptr, NativeLong window, PointerByReference name);
-    int XQueryTree(Pointer ptr, NativeLong window, PointerByReference dummy1, PointerByReference dummy2
-      , PointerByReference children, IntByReference nchildren);
-    void XFree(Pointer ptr);
-    NativeLong XInternAtom(Pointer ptr, String str, int bool);
-    int XChangeProperty(Pointer ptr, NativeLong xid, NativeLong state, NativeLong type, int size, int action
-      , Pointer data, int cnt);
-    int XKeysymToKeycode(Pointer ptr, char keysym);
-    void XGetInputFocus(Pointer ptr, NativeLongByReference window, IntByReference revert);
-    int XSendEvent(Pointer ptr, NativeLong window, int state, int type, Pointer event);
-    NativeLong XDefaultRootWindow(Pointer ptr);
-    NativeLong XCreateSimpleWindow(Pointer display, NativeLong parent, int x, int y, int width, int height, int border_width
-      , NativeLong border, NativeLong background);
-    void XSetSelectionOwner(Pointer display, NativeLong selection, NativeLong owner, NativeLong time);
-    void XMapWindow(Pointer display, NativeLong window);
-    void XUnmapWindow(Pointer display, NativeLong window);
-    void XRaiseWindow(Pointer display, NativeLong window);
-    void XIconifyWindow(Pointer display, NativeLong window, int screen);
-    void XNextEvent(Pointer display, XEvent ev);
-    NativeLong XSelectInput(Pointer display, NativeLong window, NativeLong event_mask);
-    void XMoveWindow(Pointer display, NativeLong window, int x, int y);
-    void XMoveResizeWindow(Pointer display, NativeLong window, int x, int y, int width, int height);
-    void XReparentWindow(Pointer display, NativeLong window, NativeLong parent, int x, int y);
-    int XGetWindowProperty(Pointer display, NativeLong window, NativeLong prop, NativeLong offset, NativeLong length
-      , int delete, NativeLong reqType, NativeLongByReference actType, IntByReference actFormat
-      , NativeLongByReference nItems, NativeLongByReference bytesAfter, PointerByReference returnProp);
-    int XGetClassHint(Pointer display, NativeLong w, XClassHint hint);
-  }
-
-  private static interface PAM extends Library {
-    int pam_start(String ctx, String user, pam_conv conv, PointerByReference handle_ref);
-    int pam_authenticate(Pointer handle, int flags);
-    int pam_end(Pointer handle, int flags);
-  }
-
-  private static interface C extends Library {
-    Pointer malloc(int size);
-    Pointer calloc(int cnt, int size);
-    void free(Pointer ptr);
-    Pointer strdup(String str);
-    void setenv(String name, String value, int overwrite);
-  }
-
-  private static X11 x11;
-  private static PAM pam;
-  private static C c;
-
-  public static class XEvent extends Structure {
-    public int type;
-    public NativeLong pad[] = new NativeLong[24];
-
-    @Override
-    protected java.util.List getFieldOrder() {
-      return Arrays.asList(new String[] {
-        "type", "pad"
-      });
-    }
-  }
-
-  public static class XKeyEvent extends Structure {
-    public int type;
-    public NativeLong serial;
-    public int send_event;  //Bool
-    public Pointer display;
-    public NativeLong window, root, subwindow;
-    public NativeLong time;
-    public int x,y,x_root,y_root;
-    public int state;
-    public int keycode;
-    public int same_screen;  //Bool
-
-    @Override
-    protected java.util.List getFieldOrder() {
-      return Arrays.asList(new String[] {
-        "type", "serial" ,"send_event", "display", "window", "root", "subwindow"
-        ,"time","x","y","x_root","y_root","state","keycode","same_screen"
-      });
-    }
-  }
-
   private static final int None = 0;
   private static final int CurrentTime = 0;
   private static final int ShiftMask = 1;
@@ -784,368 +694,35 @@ public class Linux {
   private static final int SubstructureNotifyMask = (1 << 19);
   private static final int PropertyChangeMask = (1 << 22);
 
-  public static class XClientMessageEvent extends Structure {
-    public int type;
-    public NativeLong serial;
-    public int send_event;  //Bool
-    public Pointer display;
-    public NativeLong window;
-    public NativeLong message_type;  //Atom
-    public int format;
-    //union {
-    //public byte data_b[] = new byte[20];
-    //public short data_s[] = new short[10];
-    public NativeLong data_l[] = new NativeLong[5];
-    //} data;
-
-    @Override
-    protected java.util.List getFieldOrder() {
-      return Arrays.asList(new String[] {
-        "type", "serial", "send_event", "display", "window", "message_type", "format", "data_l"
-      });
-    }
-    public XClientMessageEvent(Pointer ptr) {
-      super(ptr);
-    }
-    public XClientMessageEvent() {}
-  }
-
-  public static class XDestroyWindowEvent extends Structure {
-    public int type;
-    public NativeLong serial;
-    public int send_event;  //Bool
-    public NativeLong display;
-    public NativeLong event;
-    public NativeLong window;
-
-    @Override
-    protected java.util.List getFieldOrder() {
-      return Arrays.asList(new String[] {
-        "type", "serial", "send_event", "display", "event", "window"
-      });
-    }
-    public XDestroyWindowEvent(Pointer ptr) {
-      super(ptr);
-    }
-  }
-
-  public static class XCreateWindowEvent extends Structure {
-    public int type;
-    public NativeLong serial;
-    public int send_event;  //Bool
-    public NativeLong display;
-    public NativeLong parent;
-    public NativeLong window;
-    public int x,y,width,height;
-    public int border_width;
-    public int override_redirect;  //Bool
-
-    @Override
-    protected java.util.List getFieldOrder() {
-      return Arrays.asList(new String[] {
-        "type", "serial", "send_event", "display", "parent", "window", "x", "y", "width", "height",
-        "border_width", "override_redirect"
-      });
-    }
-    public XCreateWindowEvent(Pointer ptr) {
-      super(ptr);
-    }
-  }
-
-  public static class XPropertyEvent extends Structure {
-    public int type;
-    public NativeLong serial;
-    public int send_event;  //Bool
-    public NativeLong display;
-    public NativeLong window;
-    public NativeLong atom;
-    public NativeLong time;
-    public int state;
-
-    @Override
-    protected java.util.List getFieldOrder() {
-      return Arrays.asList(new String[] {
-        "type", "serial", "send_event", "display", "window", "atom", "time", "state"
-      });
-    }
-    public XPropertyEvent(Pointer ptr) {
-      super(ptr);
-    }
-  }
-
-  public static class XClassHint extends Structure {
-    public Pointer res_name, res_class;
-
-    @Override
-    protected java.util.List getFieldOrder() {
-      return Arrays.asList(new String[] {
-        "res_name", "res_class"
-      });
-    }
-  }
-
   public static boolean init() {
-    //load x11 library
-    if (x11 == null) {
-      x11 = (X11)Native.loadLibrary("X11", X11.class);
-    }
-    //load PAM library
-    if (pam == null) {
-      pam = (PAM)Native.loadLibrary("pam", PAM.class);
-    }
-    //load C library
-    if (c == null) {
-      c = (C)Native.loadLibrary("c", C.class);
-    }
-    return x11 != null && pam != null && c != null;
+    return true;
   }
 
-  public static Object x11_get_id(java.awt.Window w) {
-    return new NativeLong(Native.getWindowID(w));
+  public static long x11_get_id(java.awt.Window w) {
+    return LnxNative.x11_get_id(w);
   }
 
-  private static final NativeLong AnyPropertyType = new NativeLong(0);
-  private static final NativeLong XA_ATOM = new NativeLong(4);
-  private static final NativeLong XA_CARDINAL = new NativeLong(6);
-  private static final int PropModeReplace = 0;
-
-  public static void x11_set_desktop(Object xid) {
-    Pointer display = x11.XOpenDisplay(null);
-    int ret;
-    Pointer states = c.malloc(NativeLong.SIZE * 4);
-    Pointer types = c.malloc(NativeLong.SIZE * 1);
-    for(int a=0;a<2;a++) {
-      NativeLong state = x11.XInternAtom(display, "_NET_WM_STATE", 0);
-      states.setNativeLong(NativeLong.SIZE * 0, x11.XInternAtom(display, "_NET_WM_STATE_BELOW", 0));
-      states.setNativeLong(NativeLong.SIZE * 1, x11.XInternAtom(display, "_NET_WM_STATE_SKIP_PAGER", 0));
-      states.setNativeLong(NativeLong.SIZE * 2, x11.XInternAtom(display, "_NET_WM_STATE_SKIP_TASKBAR", 0));
-      states.setNativeLong(NativeLong.SIZE * 3, x11.XInternAtom(display, "_NET_WM_STATE_STICKY", 0));
-      ret = x11.XChangeProperty(display, (NativeLong)xid, state, XA_ATOM, 32, PropModeReplace, states, 4);
-      NativeLong type = x11.XInternAtom(display, "_NET_WM_WINDOW_TYPE", 0);
-      types.setNativeLong(NativeLong.SIZE * 0, x11.XInternAtom(display, "_NET_WM_WINDOW_TYPE_DESKTOP", 0));
-      ret = x11.XChangeProperty(display, (NativeLong)xid, type, XA_ATOM, 32, PropModeReplace, types, 1);
-    }
-    c.free(states);
-    c.free(types);
-    x11.XCloseDisplay(display);
+  public static void x11_set_desktop(long xid) {
+    LnxNative.x11_set_desktop(xid);
   }
 
-  public static void x11_set_dock(Object xid) {
-    Pointer display = x11.XOpenDisplay(null);
-    int ret;
-    Pointer states = c.malloc(Pointer.SIZE * 4);
-    Pointer types = c.malloc(Pointer.SIZE * 1);
-    for(int a=0;a<2;a++) {
-      NativeLong state = x11.XInternAtom(display, "_NET_WM_STATE", 0);
-      states.setNativeLong(NativeLong.SIZE * 0, x11.XInternAtom(display, "_NET_WM_STATE_ABOVE", 0));
-      states.setNativeLong(NativeLong.SIZE * 1, x11.XInternAtom(display, "_NET_WM_STATE_SKIP_PAGER", 0));
-      states.setNativeLong(NativeLong.SIZE * 2, x11.XInternAtom(display, "_NET_WM_STATE_SKIP_TASKBAR", 0));
-      states.setNativeLong(NativeLong.SIZE * 3, x11.XInternAtom(display, "_NET_WM_STATE_STICKY", 0));
-      ret = x11.XChangeProperty(display, (NativeLong)xid, state, XA_ATOM, 32, PropModeReplace, states, 4);
-      NativeLong type = x11.XInternAtom(display, "_NET_WM_WINDOW_TYPE", 0);
-      types.setNativeLong(NativeLong.SIZE * 0, x11.XInternAtom(display, "_NET_WM_WINDOW_TYPE_DOCK", 0));
-      ret = x11.XChangeProperty(display, (NativeLong)xid, type, XA_ATOM, 32, PropModeReplace, types, 1);
-    }
-    c.free(states);
-    c.free(types);
-    x11.XCloseDisplay(display);
+  public static void x11_set_dock(long xid) {
+    LnxNative.x11_set_dock(xid);
   }
 
-  public static void x11_set_strut(Object xid, int panelHeight, int x, int y, int width, int height) {
-    Pointer display = x11.XOpenDisplay(null);
-    NativeLong strut = x11.XInternAtom(display, "_NET_WM_STRUT_PARTIAL", 0);
-    Pointer values = c.malloc(NativeLong.SIZE * 12);
-    values.setNativeLong(NativeLong.SIZE * 0, new NativeLong(0));  //left
-    values.setNativeLong(NativeLong.SIZE * 1, new NativeLong(0));  //right
-    values.setNativeLong(NativeLong.SIZE * 2, new NativeLong(0));  //top
-    values.setNativeLong(NativeLong.SIZE * 3, new NativeLong(panelHeight));   //bottom
-    values.setNativeLong(NativeLong.SIZE * 4, new NativeLong(0));  //left_start_y
-    values.setNativeLong(NativeLong.SIZE * 5, new NativeLong(height-1));  //left_end_y
-    values.setNativeLong(NativeLong.SIZE * 6, new NativeLong(0));  //right_start_y
-    values.setNativeLong(NativeLong.SIZE * 7, new NativeLong(height-1));  //right_end_y
-    values.setNativeLong(NativeLong.SIZE * 8, new NativeLong(0));  //top_start_x
-    values.setNativeLong(NativeLong.SIZE * 9, new NativeLong(width-1));  //top_end_x
-    values.setNativeLong(NativeLong.SIZE * 10, new NativeLong(0));  //bottom_start_x
-    values.setNativeLong(NativeLong.SIZE * 11, new NativeLong(width-1));  //bottom_end_x
-    int ret = x11.XChangeProperty(display, (NativeLong)xid, strut, XA_CARDINAL, 32, PropModeReplace, values, 12);
-    c.free(values);
-
-    x11.XCloseDisplay(display);
+  public static void x11_set_strut(long xid, int panelHeight, int x, int y, int width, int height) {
+    LnxNative.x11_set_strut(xid, panelHeight,x,y,width,height);
   }
 
 //tray functions
 
-  private static final int MAX_TRAY_ICONS = 64;
-  private static NativeLong tray_icons[] = new NativeLong[MAX_TRAY_ICONS];
-  private static int screen_width;
-  private static Pointer tray_display;
-  private static NativeLong tray_opcode;//, tray_data;
-  private static NativeLong tray_window;
-  private static boolean tray_active;
-  private static int tray_count = 0;
-  private static X11Listener x11_listener;
-  private static final int tray_icon_size = 24;  //fixed
-  private static int tray_height = 24+4;
-  private static int tray_rows = 2;
-  private static int borderSize = 4;
-  private static int tray_pos = 0;
-  private static int tray_pad = 2;
-  private static int tray_width = 24+4;
-
-  private static void tray_move_icons() {
-    int a, x = tray_pad, y;
-    int y1 = 0;
-    int y2 = 0;
-    if (tray_rows == 1) {
-      y1 = (tray_height - tray_icon_size) / 2;
-    } else {
-      int d = (tray_height - (tray_icon_size*2))/3;
-      y1 = d;
-      y2 = d + tray_icon_size + d;
-    }
-    y = y1;
-    for(a=0;a<MAX_TRAY_ICONS;a++) {
-      if (tray_icons[a] == null) continue;
-      x11.XMoveResizeWindow(tray_display, tray_icons[a], x, y, tray_icon_size, tray_icon_size);
-      if (y == y1 && tray_rows > 1) {
-        y = y2;
-      } else {
-        y = y1;
-        x += tray_icon_size + tray_pad;
-      }
-    }
-    //reposition/resize tray window
-    int cols = (tray_count + (tray_rows > 1 ? 1 : 0)) / tray_rows;
-    if (cols == 0) cols = 1;
-    int px = tray_pos - (cols * (tray_icon_size+tray_pad)) - tray_pad - borderSize;
-    int py = borderSize;
-    int sx = (cols * (tray_icon_size+tray_pad)) + tray_pad;
-    tray_width = sx;
-    int sy = tray_height;  //tray_rows * (tray_icon_size + tray_pad) + tray_pad;
-//    JFLog.log("Tray Position:" + px + "," + py + ",size=" + sx + "," + sy);
-    x11.XMoveResizeWindow(tray_display, tray_window, px, py, sx, sy);
-  }
-
-  private static void tray_add_icon(NativeLong w) {
-    if (tray_count == MAX_TRAY_ICONS) return;  //ohoh
-    tray_count++;
-    int a;
-    for(a=0;a<MAX_TRAY_ICONS;a++) {
-      if (tray_icons[a] == null) {
-        tray_icons[a] = w;
-        break;
-      }
-    }
-    x11.XReparentWindow(tray_display, w, tray_window, 0, 0);
-    tray_move_icons();
-    x11.XMapWindow(tray_display, w);
-    x11_listener.trayIconAdded(tray_count);
-  }
-
-  /* Tray opcode messages from System Tray Protocol Specification
-     http://standards.freedesktop.org/systemtray-spec/systemtray-spec-0.3.html
-  */
-  private static final int SYSTEM_TRAY_REQUEST_DOCK   = 0;
-  private static final int SYSTEM_TRAY_BEGIN_MESSAGE  = 1;
-  private static final int SYSTEM_TRAY_CANCEL_MESSAGE = 2;
-
-  private static final int SYSTEM_TRAY_STOP = 0x100;  //more like a wake up
-  private static final int SYSTEM_TRAY_REPOSITION = 0x101;
-
-  private static void tray_client_message(XClientMessageEvent ev) {
-    if (ev.message_type.equals(tray_opcode)) {
-      switch (ev.data_l[1].intValue()) {
-        case SYSTEM_TRAY_REQUEST_DOCK:
-          tray_add_icon(ev.data_l[2]);
-          break;
-        case SYSTEM_TRAY_BEGIN_MESSAGE:
-          break;
-        case SYSTEM_TRAY_CANCEL_MESSAGE:
-          break;
-        case SYSTEM_TRAY_REPOSITION:
-//          JFLog.log("Tray:ClientMessage = SYSTEM_TRAY_REPOSITION");
-          tray_move_icons();
-          break;
-        case SYSTEM_TRAY_STOP:
-          //does nothing, but main while loop will now exit
-          break;
-      }
-    }
-  }
-
-  private static void tray_remove_icon(XDestroyWindowEvent ev) {
-    int a;
-    for(a=0;a<MAX_TRAY_ICONS;a++) {
-      if (tray_icons[a] == null) continue;
-      if (tray_icons[a].equals(ev.window)) {
-        tray_icons[a] = null;
-        tray_count--;
-        tray_move_icons();
-        x11_listener.trayIconRemoved(tray_count);
-        break;
-      }
-    }
-  }
-
   public static void x11_set_listener(X11Listener cb) {
-    x11_listener = cb;
+    //x11_listener = cb; //TODO
   }
 
-  /** Polls and dispatches tray events.  Does not return. */
-  public static void x11_tray_main(Object pid, int screenWidth, int trayPos, int trayHeight) {
-    XEvent ev = new XEvent();
-
-    screen_width = screenWidth;
-    tray_pos = trayPos;
-    tray_height = trayHeight;
-    if (tray_height >= tray_icon_size * 2 + tray_pad * 3) {
-      tray_rows = 2;
-    } else {
-      tray_rows = 1;
-    }
-    tray_display = x11.XOpenDisplay(null);
-    NativeLong tray_atom = x11.XInternAtom(tray_display, "_NET_SYSTEM_TRAY_S0", False);
-    tray_opcode = x11.XInternAtom(tray_display, "_NET_SYSTEM_TRAY_OPCODE", False);
-//    tray_data = x11.XInternAtom(tray_display, "_NET_SYSTEM_TRAY_MESSAGE_DATA", False);
-
-    tray_window = x11.XCreateSimpleWindow(
-      tray_display,
-      (NativeLong)pid,  //parent id
-      trayPos - tray_icon_size - 4 - borderSize, borderSize,  //pos
-      tray_icon_size + 4, 52,  //size
-      1,  //border_width
-      new NativeLong(0xcccccc),  //border clr
-      new NativeLong(0xdddddd));  //backgnd clr
-
-    x11.XSetSelectionOwner(tray_display, tray_atom, tray_window, new NativeLong(CurrentTime));
-
-    //get DestroyNotify events
-    x11.XSelectInput(tray_display, tray_window, new NativeLong(SubstructureNotifyMask));
-
-    x11.XMapWindow(tray_display, tray_window);
-
-    tray_active = true;
-    try {
-      while (tray_active) {
-        x11.XNextEvent(tray_display, ev);
-        switch (ev.type) {
-          case ClientMessage:
-            XClientMessageEvent xclient = new XClientMessageEvent(ev.getPointer());
-            xclient.read();
-            tray_client_message(xclient);
-            break;
-          case DestroyNotify:
-            XDestroyWindowEvent xdestroywindow = new XDestroyWindowEvent(ev.getPointer());
-            xdestroywindow.read();
-            tray_remove_icon(xdestroywindow);
-            break;
-        }
-      }
-    } catch (Exception e) {
-      JFLog.log(e);
-    }
-
-    x11.XCloseDisplay(tray_display);
+  /** Polls and dispatches tray events.  Does not return until x11_tray_stop() is called. */
+  public static void x11_tray_main(long pid, int screenWidth, int trayPos, int trayHeight) {
+    LnxNative.x11_tray_main(pid, screenWidth, trayPos, trayHeight);
   }
 
   /** Repositions tray icons and the tray window itself.
@@ -1153,119 +730,39 @@ public class Linux {
    * @param screenWidth = new screen width (-1 = has not changed)
    */
   public static void x11_tray_reposition(int screenWidth, int trayPos, int trayHeight) {
-    if (screenWidth != -1) screen_width = screenWidth;
-    if (trayPos != -1) tray_pos = trayPos;
-    if (trayHeight != -1) tray_height = trayHeight;
-    if (tray_height >= tray_icon_size * 2 + tray_pad * 3) {
-      tray_rows = 2;
-    } else {
-      tray_rows = 1;
-    }
-    //X11 is not thread safe so can't call tray_move_icons() from here, send a msg instead
-    Pointer display = x11.XOpenDisplay(null);
-
-    XClientMessageEvent event = new XClientMessageEvent();
-
-    event.type = ClientMessage;
-    event.display = display;
-    event.window = tray_window;
-    event.message_type = tray_opcode;
-    event.format = 32;
-    event.data_l[1] = new NativeLong(SYSTEM_TRAY_REPOSITION);
-    event.write();
-
-    x11.XSendEvent(display, event.window, True, 0, event.getPointer());
-
-    x11.XCloseDisplay(display);
+    LnxNative.x11_tray_reposition(screenWidth, trayPos, trayHeight);
   }
 
   /** Stops x11_tray_main() */
   public static void x11_tray_stop() {
-    tray_active = false;
-    Pointer display = x11.XOpenDisplay(null);
-
-    XClientMessageEvent event = new XClientMessageEvent();
-
-    event.type = ClientMessage;
-    event.display = display;
-    event.window = tray_window;
-    event.message_type = tray_opcode;
-    event.format = 32;
-    event.data_l[1] = new NativeLong(SYSTEM_TRAY_STOP);
-    event.write();
-
-    x11.XSendEvent(display, event.window, True, 0, event.getPointer());
-
-    x11.XCloseDisplay(display);
+    LnxNative.x11_tray_stop();
   }
 
   public static int x11_tray_width() {
-    return tray_width;
+    return LnxNative.x11_tray_width();
   }
 
 //top-level x11 windows monitor
 
-  private static boolean window_list_active = false;
-
-  /** Polls and dispatches top-level windows events.  Does not return. */
+  /** Polls and dispatches top-level windows events.  Does not return until x11_window_list_stop() is called. */
   public static void x11_window_list_main() {
-    XEvent ev = new XEvent();
-
-    Pointer display = x11.XOpenDisplay(null);
-
-    NativeLong root_window = x11.XDefaultRootWindow(display);
-
-    NativeLong net_client_list = x11.XInternAtom(display, "_NET_CLIENT_LIST", False);
-    NativeLong net_client_list_stacking = x11.XInternAtom(display, "_NET_CLIENT_LIST_STACKING", False);
-    NativeLong net_name = x11.XInternAtom(display, "_NET_WM_NAME", False);
-    NativeLong net_pid = x11.XInternAtom(display, "_NET_WM_PID", False);
-    NativeLong net_state = x11.XInternAtom(display, "_NET_WM_STATE", False);
-
-    x11.XSelectInput(display, root_window, new NativeLong(PropertyChangeMask));
-
-    try {
-      window_list_active = true;
-      while (window_list_active) {
-        x11.XNextEvent(display, ev);
-        switch (ev.type) {
-          case PropertyNotify:
-            XPropertyEvent xpropertyevent = new XPropertyEvent(ev.getPointer());
-            xpropertyevent.read();
-            if (
-              (xpropertyevent.atom.equals(net_client_list)) ||
-              (xpropertyevent.atom.equals(net_client_list_stacking)) ||
-              (xpropertyevent.atom.equals(net_name)) ||
-              (xpropertyevent.atom.equals(net_pid)) ||
-              (xpropertyevent.atom.equals(net_state))
-               )
-            {
-              x11_update_window_list(display);
-              x11_listener.windowsChanged();
-            }
-            break;
-        }
-      }
-    } catch (Exception e) {
-      JFLog.log(e);
-    }
-
-    x11.XCloseDisplay(display);
+    LnxNative.x11_window_list_main();
   }
 
   public static void x11_window_list_stop() {
-    window_list_active = false;
+    LnxNative.x11_window_list_stop();
     //TODO : send a message to ??? to cause main() loop to abort
   }
 
   public static class Window {
-    public Object xid;
+    public long xid;
     public int pid;
     public String title;  //_NET_WM_NAME
     public String name;  //XFetchName
     public String res_name, res_class;
     public String file;  //user defined
-    public NativeLong org_event_mask;
-    public Window(Object xid, int pid, String title, String name, String res_name, String res_class) {
+    public long org_event_mask;
+    public Window(long xid, int pid, String title, String name, String res_name, String res_class) {
       this.xid = xid;
       this.pid = pid;
       this.title = title;
@@ -1288,247 +785,64 @@ public class Linux {
     }
   }
 
-  public static void x11_minimize_all() {
-    Pointer display = x11.XOpenDisplay(null);
-    Window wins[] = x11_get_window_list();
-    for(int a=0;a<wins.length;a++) {
-      x11.XIconifyWindow(display, (NativeLong)wins[a].xid, 0);
-    }
-    x11.XCloseDisplay(display);
-  }
-
-  private static void x11_update_window_list(Pointer display) {
-    ArrayList<Window> newList = new ArrayList<Window>();
-
-    NativeLong root_window = x11.XDefaultRootWindow(display);
-
-    NativeLong net_client_list = x11.XInternAtom(display, "_NET_CLIENT_LIST", False);
-//    NativeLong net_client_list_stacking = x11.XInternAtom(display, "_NET_CLIENT_LIST_STACKING", False);
-    NativeLong net_name = x11.XInternAtom(display, "_NET_WM_NAME", False);
-    NativeLong net_pid = x11.XInternAtom(display, "_NET_WM_PID", False);
-    NativeLong net_state = x11.XInternAtom(display, "_NET_WM_STATE", False);
-    NativeLong net_skip_taskbar = x11.XInternAtom(display, "_NET_WM_STATE_SKIP_TASKBAR", False);
-
-    PointerByReference propRef = new PointerByReference();
-    NativeLongByReference nItemsRef = new NativeLongByReference();
-    x11.XGetWindowProperty(display, root_window, net_client_list, new NativeLong(0), new NativeLong(1024), False, AnyPropertyType
-      , new NativeLongByReference(), new IntByReference(), nItemsRef, new NativeLongByReference(), propRef);
-    int nWindows = nItemsRef.getValue().intValue();
-    int nItems;
-    Pointer list = propRef.getValue();
-    for(int a=0;a<nWindows;a++) {
-      NativeLong xid = list.getNativeLong(NativeLong.SIZE * a);
-
-      //check state for skip taskbar
-      propRef = new PointerByReference();
-      nItemsRef = new NativeLongByReference();
-      x11.XGetWindowProperty(display, xid, net_state, new NativeLong(0), new NativeLong(1024), False, AnyPropertyType
-        , new NativeLongByReference(), new IntByReference(), nItemsRef, new NativeLongByReference(), propRef);
-      nItems = nItemsRef.getValue().intValue();
-      if (nItems > 0) {
-        Pointer prop = propRef.getValue();
-        boolean found = false;
-        for(int n=0;n<nItems;n++) {
-          if (prop.getNativeLong(n * NativeLong.SIZE).equals(net_skip_taskbar)) {
-            found = true;
-          }
-        }
-        x11.XFree(propRef.getValue());
-        if (found) continue;
-      }
-
-      //get window pid
-      propRef = new PointerByReference();
-      nItemsRef = new NativeLongByReference();
-      x11.XGetWindowProperty(display, xid, net_pid, new NativeLong(0), new NativeLong(1024), False, AnyPropertyType
-        , new NativeLongByReference(), new IntByReference(), nItemsRef, new NativeLongByReference(), propRef);
-      nItems = nItemsRef.getValue().intValue();
-      int pid = -1;
-      if (nItems > 0) {
-        Pointer prop = propRef.getValue();
-        pid = (int)prop.getInt(0);
-        x11.XFree(prop);
-      }
-
-      //get title
-      propRef = new PointerByReference();
-      nItemsRef = new NativeLongByReference();
-      x11.XGetWindowProperty(display, xid, net_name, new NativeLong(0), new NativeLong(1024), False, AnyPropertyType
-        , new NativeLongByReference(), new IntByReference(), nItemsRef, new NativeLongByReference(), propRef);
-      nItems = nItemsRef.getValue().intValue();
-      String title = "";
-      if (nItems > 0) {
-        Pointer prop = propRef.getValue();
-        title = prop.getString(0);
-        x11.XFree(prop);
-      }
-
-      //get name
-      String name = "";
-      PointerByReference nameRef = new PointerByReference();
-      x11.XFetchName(display, xid, nameRef);
-      Pointer namePtr = nameRef.getValue();
-      if (namePtr != null) {
-        name = namePtr.getString(0);
-        x11.XFree(namePtr);
-      }
-
-      //get res_name, res_class
-      String res_name = "", res_class = "";
-      XClassHint hint = new XClassHint();
-      x11.XGetClassHint(display, xid, hint);
-      if (hint.res_name != null) {
-        res_name = hint.res_name.getString(0);
-        x11.XFree(hint.res_name);
-        hint.res_name = null;
-      }
-      if (hint.res_class != null) {
-        res_class = hint.res_class.getString(0);
-        x11.XFree(hint.res_class);
-        hint.res_class = null;
-      }
-
-      //add to list
-      newList.add(new Window(xid, pid, title, name, res_name, res_class));
-    }
-    x11.XFree(list);
-
+  //called from native code to add/update a window
+  private static void x11_window_add(long xid, int pid, String title, String name, String res_name, String res_class) {
+    Window window = new Window(xid, pid, title, name, res_name, res_class);
     synchronized(currentListLock) {
-      //add newList to currentList
-      for(int a=0;a<newList.size();a++) {
-        Window tlw = newList.get(a);
-        Object xid = tlw.xid;
-        boolean found = false;
-        for(int b=0;b<currentList.size();b++) {
-          if (currentList.get(b).xid.equals(xid)) {
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          currentList.add(tlw);
-          tlw.org_event_mask = x11.XSelectInput(display, (NativeLong)tlw.xid, new NativeLong(PropertyChangeMask));
+      int cnt = currentList.size();
+      for(int a=0;a<cnt;a++) {
+        if (currentList.get(a).xid == xid) {
+          currentList.set(a, window);
+          return;
         }
       }
-      //remove from currentList if not in newList
-      for(int a=0;a<currentList.size();) {
-        Window tlw = currentList.get(a);
-        Object xid = tlw.xid;
-        boolean found = false;
-        for(int b=0;b<newList.size();b++) {
-          if (newList.get(b).xid.equals(xid)) {
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
+      currentList.add(window);
+    }
+  }
+
+  //called from native code to delete a window
+  private static void x11_window_del(long xid) {
+    synchronized(currentListLock) {
+      int cnt = currentList.size();
+      for(int a=0;a<cnt;a++) {
+        if (currentList.get(a).xid == xid) {
           currentList.remove(a);
-          x11.XSelectInput(display, (NativeLong)tlw.xid, tlw.org_event_mask);
-        } else {
-          a++;
+          return;
         }
       }
     }
   }
 
-  public static void x11_raise_window(Object xid) {
-    Pointer display = x11.XOpenDisplay(null);
-    x11.XRaiseWindow(display, (NativeLong)xid);
-    x11.XCloseDisplay(display);
+  public static void x11_minimize_all() {
+    LnxNative.x11_minimize_all();
   }
 
-  public static void x11_map_window(Object xid) {
-    Pointer display = x11.XOpenDisplay(null);
-    x11.XMapWindow(display, (NativeLong)xid);
-    x11.XCloseDisplay(display);
+  public static void x11_raise_window(long xid) {
+    LnxNative.x11_raise_window(xid);
   }
 
-  public static void x11_unmap_window(Object xid) {
-    Pointer display = x11.XOpenDisplay(null);
-    x11.XUnmapWindow(display, (NativeLong)xid);
-    x11.XCloseDisplay(display);
+  public static void x11_map_window(long xid) {
+    LnxNative.x11_map_window(xid);
+  }
+
+  public static void x11_unmap_window(long xid) {
+    LnxNative.x11_unmap_window(xid);
   }
 
 //x11 send event functions
 
   public static int x11_keysym_to_keycode(char keysym) {
-    Pointer display = x11.XOpenDisplay(null);
-    int keycode = x11.XKeysymToKeycode(display, keysym);
-    x11.XCloseDisplay(display);
-    switch (keysym) {
-      case '!':
-      case '@':
-      case '#':
-      case '$':
-      case '%':
-      case '^':
-      case '&':
-      case '*':
-      case '"':
-      case ':':
-        keycode |= 0x100;
-    }
-    return keycode;
+    return LnxNative.x11_keysym_to_keycode(keysym);
   }
 
   /** Send keyboard event to window with focus. */
   public static boolean x11_send_event(int keycode, boolean down) {
-    Pointer display = x11.XOpenDisplay(null);
-
-    NativeLongByReference x11id = new NativeLongByReference();
-    IntByReference revert = new IntByReference();
-    x11.XGetInputFocus(display, x11id, revert);
-
-    XKeyEvent event = new XKeyEvent();
-
-    event.type = (down ? KeyPress : KeyRelease);
-    event.keycode = keycode & 0xff;
-    event.display = display;
-    event.window = x11id.getValue();
-    event.root = x11.XDefaultRootWindow(display);
-    event.subwindow = new NativeLong(None);
-    event.time = new NativeLong(CurrentTime);
-    event.x = 1;
-    event.y = 1;
-    event.x_root = 1;
-    event.y_root = 1;
-    event.same_screen = True;
-    if ((keycode & 0x100) == 0x100) event.state = ShiftMask;
-    event.write();
-
-    int status = x11.XSendEvent(display, event.window, True, down ? KeyPressMask : KeyReleaseMask, event.getPointer());
-
-    x11.XCloseDisplay(display);
-
-    return status != 0;
+    return LnxNative.x11_send_event(keycode, down);
   }
 
   /** Send keyboard event to specific window. */
-  public static boolean x11_send_event(Object id, int keycode, boolean down) {
-    Pointer display = x11.XOpenDisplay(null);
-
-    XKeyEvent event = new XKeyEvent();
-
-    event.type = (down ? KeyPress : KeyRelease);
-    event.keycode = keycode & 0xff;
-    event.display = display;
-    event.window = (NativeLong)id;
-    event.root = x11.XDefaultRootWindow(display);
-    event.subwindow = new NativeLong(None);
-    event.time = new NativeLong(CurrentTime);
-    event.x = 1;
-    event.y = 1;
-    event.x_root = 1;
-    event.y_root = 1;
-    event.same_screen = True;
-    if ((keycode & 0x100) == 0x100) event.state = ShiftMask;
-    event.write();
-
-    int status = x11.XSendEvent(display, event.window, True, down ? KeyPressMask : KeyReleaseMask, event.getPointer());
-
-    x11.XCloseDisplay(display);
-
-    return status != 0;
+  public static boolean x11_send_event(long id, int keycode, boolean down) {
+    return LnxNative.x11_send_event(id, keycode, down);
   }
 
   //X11 : RandR support
@@ -1887,100 +1201,15 @@ public class Linux {
 
   //PAM functions
 
-  public static class pam_message extends Structure {
-    public int msg_style;
-    public String msg;
-
-    @Override
-    protected java.util.List getFieldOrder() {
-      return Arrays.asList(new String[] {"msg_style", "msg"});
-    }
-    public pam_message(Pointer ptr) {
-      super(ptr);
-    }
-  }
-
-  public static class pam_response extends Structure {
-    public Pointer resp;
-    public int resp_retcode;
-
-    @Override
-    protected java.util.List getFieldOrder() {
-      return Arrays.asList(new String[] {"resp", "resp_retcode"});
-    }
-    public pam_response(Pointer ptr) {
-      super(ptr);
-    }
-  }
-
-  public static class pam_conv extends Structure {
-    public Callback func;
-    public Pointer appdata_ptr;
-
-    @Override
-    protected java.util.List getFieldOrder() {
-      return Arrays.asList(new String[] {"func", "appdata_ptr"});
-    }
-  }
-
-  public static interface do_conv extends Callback {
-    public int callback(int num_msg, Pointer _pam_messages, Pointer _pam_responses, Pointer _appdata_ptr);
-  }
-
-  public static do_conv pam_callback = new do_conv() {
-    public int callback(int num_msg, Pointer _pam_messages, Pointer _pam_responses, Pointer _appdata_ptr) {
-      int resp_size = Pointer.SIZE + 4;  //sizeof(pam_response)
-      pam_responses = c.calloc(num_msg, resp_size);  //array of pam_response
-      Pointer tmp;
-      for(int a=0;a<num_msg;a++) {
-        pam_message msg = new pam_message(_pam_messages.getPointer(a * Pointer.SIZE));
-        msg.read();
-        tmp = null;
-        switch (msg.msg_style) {
-          case PAM_PROMPT_ECHO_ON:
-            tmp = c.strdup(pam_user);
-            break;
-          case PAM_PROMPT_ECHO_OFF:
-            tmp = c.strdup(pam_pass);
-            break;
-        }
-        pam_responses.setPointer(a * resp_size, tmp);  //pam_response.resp
-        pam_responses.setInt(a * resp_size + Pointer.SIZE, 0);  //pam_response.resp_retcode
-      }
-      _pam_responses.setPointer(0, pam_responses);
-      return 0;
-    }
-  };
-
   private static final int PAM_SILENT = 0x8000;
   private static final int PAM_PROMPT_ECHO_ON = 2;
   private static final int PAM_PROMPT_ECHO_OFF = 1;
 
   private static String pam_user, pam_pass;
-  private static Pointer pam_responses;
+  private static long pam_responses;
 
   public static synchronized boolean authUser(String user, String pass) {
-    pam_conv conv = new pam_conv();
-    pam_user = user;
-    pam_pass = pass;
-    conv.func = pam_callback;
-    PointerByReference ref = new PointerByReference();
-    Pointer handle;
-
-    int res = pam.pam_start("passwd", user, conv, ref);
-    if (res != 0) return false;
-    handle = ref.getValue();
-    res = pam.pam_authenticate(handle, PAM_SILENT);
-    pam.pam_end(handle, 0);
-    if (pam_responses != null) {
-//      c.free(pam_responses);  //crashes if password was wrong - memory leak for now???
-      pam_responses = null;
-    }
-
-    pam_user = null;
-    pam_pass = null;
-
-    return res == 0;
+    return LnxNative.authUser(user, pass);
   }
 
   public static final int SIGKILL = 9;
@@ -1995,6 +1224,6 @@ public class Linux {
   }
 
   public static void setenv(String name, String value) {
-    c.setenv(name, value, 1);
+    LnxNative.setenv(name, value);
   }
 }

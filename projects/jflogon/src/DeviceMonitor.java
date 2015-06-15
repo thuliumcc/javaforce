@@ -5,7 +5,8 @@
  */
 
 import javaforce.*;
-import javaforce.jna.*;
+import javaforce.jni.*;
+import javaforce.jni.lnx.*;
 import javaforce.utils.*;
 
 public class DeviceMonitor extends Thread implements ShellProcessListener {
@@ -14,8 +15,6 @@ public class DeviceMonitor extends Thread implements ShellProcessListener {
 
   public void run() {
     LnxPty.init();
-    Fuse.init();
-    jfusecdfs.cdinit();
     // NOTE : udevadm requires a tty to operate ???
     if (true) {
       pty = LnxPty.exec("udevadm", new String[] {"udevadm", "monitor", "--kernel", null}, LnxPty.makeEnvironment());

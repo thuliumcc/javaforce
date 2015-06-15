@@ -3,8 +3,8 @@
  * @author pquiring
  */
 
-import jparted.*;
-import jconfig.*;
+import jfparted.*;
+import jfconfig.*;
 
 public class TimeZone extends IPanel {
 

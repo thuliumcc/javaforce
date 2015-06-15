@@ -17,7 +17,7 @@ import java.lang.reflect.*;
 
 import javaforce.*;
 import javaforce.voip.*;
-import javaforce.jna.*;
+import javaforce.media.*;
 
 /** Base Panel contains all phone logic code. */
 
@@ -34,7 +34,7 @@ public abstract class BasePhone extends javax.swing.JPanel implements SIPClientI
     if (Settings.isJavaScript) initRPC();
     Settings.isWindows = JF.isWindows();
     Settings.isLinux = !Settings.isWindows;
-    Settings.hasFFMPEG = FFMPEG.init();
+    Settings.hasFFMPEG = MediaCoder.loaded;
     initDTLS();
   }
 
@@ -47,7 +47,7 @@ public abstract class BasePhone extends javax.swing.JPanel implements SIPClientI
   public PhoneLine lines[];
   public JToggleButton lineButtons[];
   public JButton numButtons[];
-  public Sound sound = new Sound();
+  public Audio sound = new Audio();
   public WindowController wc;
   public String lastDial;
   public boolean showingContacts = false;

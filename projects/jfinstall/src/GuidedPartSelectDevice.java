@@ -3,7 +3,7 @@
  * @author pquiring
  */
 
-import jparted.*;
+import jfparted.*;
 import javaforce.*;
 
 public class GuidedPartSelectDevice extends IPanel {

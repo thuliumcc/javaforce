@@ -328,13 +328,13 @@ public class TrackPanel extends javax.swing.JPanel {
     return isCut;
   }
 
-  public void renderVideo(ProjectPanel.GLData gldata, JFImage image, int second, int frame) {
+  public void renderVideo(final ProjectPanel.GLData gldata, final JFImage image, final int second, final int frame) {
     int len = list.size();
     int d1 = second;
     int d2 = d1;
     isCut = false;
     for(int a=0;a<len;a++) {
-      Element e = list.get(a);
+      final Element e = list.get(a);
       int e1 = e.offset;
       int e2 = e.offset + e.length - 1;
       if ((d1 >= e1 && d1 <= e2) || (d2 >= e1 && d2 <= e2) || (d1 <= e1 && d2 >= e2))
@@ -342,24 +342,28 @@ public class TrackPanel extends javax.swing.JPanel {
         if (!e.isReady()) e.start(project.config);
         isCut = e.isCut();
         if (e.use3d) {
-          gldata.image3d.clear();
-          e.preRenderVideo();
-          e.renderVideo(gldata.image3d, second, frame);
-          //render image3d and put into image
-          gldata.scene.setTexture(0, gldata.image3d.getBuffer(), project.config.width, project.config.height);
-          gldata.model.setIdentity();
-//          gldata.model.translate(0,0,-20.f);  //base translate : TODO : based on width/height/fov
-          gldata.model.translate(e.tx, e.ty, e.tz);
-          gldata.model.rotate(e.rx, 1.0f, 0, 0);
-          gldata.model.rotate(e.ry, 0, 1.0f, 0);
-          gldata.model.rotate(e.rz, 0, 0, 1.0f);
-          gldata.gl.makeCurrent();
-          gldata.scene.render(gldata.gl);
-          gldata.image3d.putPixels(gldata.gl.getOffscreenPixels(), 0, 0
-            , project.config.width, project.config.height, 0);
-          e.applyAlpha(gldata.image3d);
-          image.putPixelsBlend(gldata.image3d.getBuffer(), 0, 0
-            , project.config.width, project.config.height, 0, true);
+          MainPanel.runGL(new Runnable() {
+            public void run() {
+              gldata.image3d.clear();
+              e.preRenderVideo();
+              e.renderVideo(gldata.image3d, second, frame);
+              //render image3d and put into image
+              gldata.scene.setTexture("0", gldata.image3d.getBuffer(), project.config.width, project.config.height, 0);
+              gldata.model.setIdentity();
+    //          gldata.model.translate(0,0,-20.f);  //base translate : TODO : based on width/height/fov
+              gldata.model.translate(e.tx, e.ty, e.tz);
+              gldata.model.rotate(e.rx, 1.0f, 0, 0);
+              gldata.model.rotate(e.ry, 0, 1.0f, 0);
+              gldata.model.rotate(e.rz, 0, 0, 1.0f);
+              gldata.gl.makeCurrent();
+              gldata.render.render(gldata.gl);
+              gldata.image3d.putPixels(gldata.gl.getOffscreenPixels(), 0, 0
+                , project.config.width, project.config.height, 0);
+              e.applyAlpha(gldata.image3d);
+              image.putPixelsBlend(gldata.image3d.getBuffer(), 0, 0
+                , project.config.width, project.config.height, 0, true);
+            }
+          });
         } else {
           e.preRenderVideo();
           e.applyAlpha();

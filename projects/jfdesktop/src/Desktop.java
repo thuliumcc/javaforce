@@ -11,7 +11,7 @@ import javax.swing.*;
 import javaforce.*;
 import javaforce.linux.*;
 
-import jfile.*;
+import jffile.*;
 
 public class Desktop extends javax.swing.JWindow {
 
@@ -35,7 +35,7 @@ public class Desktop extends javax.swing.JWindow {
         browser.createIcon("Home", "jfile " + JF.getUserPath(), "jfdesktop-home", JF.getUserPath() + "/Desktop/Home.desktop", true);
       }
       x11id = Linux.x11_get_id(this);
-      JFLog.log("Desktop.window=0x" + Integer.toString(JF.atoi(x11id.toString()), 16));
+      JFLog.log("Desktop.window=0x" + Long.toString(x11id, 16));
       try {
         Linux.x11_set_desktop(x11id);
       } catch (Throwable t) {
@@ -343,7 +343,7 @@ public class Desktop extends javax.swing.JWindow {
   public static Desktop desktop;
   public JFileBrowser browser;
   public JFImage wallPaper;
-  public Object x11id = null;
+  public long x11id;
   private int sx, sy;  //screen size
   private int mx, my;  //mouse x/y on screen
   private boolean ready = false;

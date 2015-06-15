@@ -17,7 +17,9 @@ import java.util.*;
 import javax.swing.*;
 
 import javaforce.*;
-import javaforce.jna.*;
+import javaforce.jni.*;
+import javaforce.jni.lnx.*;
+import javaforce.jni.win.*;
 
 import com.jcraft.jsch.*;
 
@@ -793,19 +795,19 @@ public class Buffer extends JComponent implements KeyListener, MouseListener, Mo
         if (wincom == null) return false;
         in = new InputStream() {
           public int read() throws IOException {
-            byte data[];
+            byte data[] = new byte[1];
+            int read = 0;
             do {
-              data = wincom.read(1);
-            } while (data == null);
+              read = wincom.read(data);
+            } while (read != 1);
             return data[0];
           }
           public int read(byte buf[]) throws IOException {
-            byte data[];
+            int read;
             do {
-              data = wincom.read(buf.length);
-            } while (data == null);
-            System.arraycopy(data, 0, buf, 0, data.length);
-            return data.length;
+              read = wincom.read(buf);
+            } while (read <= 0);
+            return read;
           }
         };
         out = new OutputStream() {
@@ -821,19 +823,19 @@ public class Buffer extends JComponent implements KeyListener, MouseListener, Mo
         if (lnxcom == null) return false;
         in = new InputStream() {
           public int read() throws IOException {
-            byte data[];
+            byte data[] = new byte[1];
+            int read;
             do {
-              data = lnxcom.read(1);
-            } while (data == null);
+              read = lnxcom.read(data);
+            } while (read <= 0);
             return data[0];
           }
           public int read(byte buf[]) throws IOException {
-            byte data[];
+            int read;
             do {
-              data = lnxcom.read(buf.length);
-            } while (data == null);
-            System.arraycopy(data, 0, buf, 0, data.length);
-            return data.length;
+              read = lnxcom.read(buf);
+            } while (read <= 0);
+            return read;
           }
         };
         out = new OutputStream() {

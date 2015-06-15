@@ -9,17 +9,9 @@
 
   <import file="../../base.xml"/>
 
-  <target name="depjars">
+  <target name="depjars" depends="depnatives">
     <jar destfile="javaforce.jar">
       <zipfileset src="../../jars/javaforce.jar"/>
-      <manifest>
-        <attribute name="Trusted-Library" value="true"/>
-        <attribute name="Permissions" value="all-permissions"/>
-        <attribute name="Codebase" value="jphonelite.sourceforge.net"/>
-      </manifest>
-    </jar>
-    <jar destfile="jna.jar">
-      <zipfileset src="../../jars/jna.jar"/>
       <manifest>
         <attribute name="Trusted-Library" value="true"/>
         <attribute name="Permissions" value="all-permissions"/>
@@ -44,7 +36,6 @@
     <javac srcdir="${src}" destdir="${build}" deprecation="true" target="1.6" source="1.6" debug="true" includeantruntime="false">
 <!--      <compilerarg value="-Xlint:unchecked"/>  -->  <!-- generates lots of annoying warnings -->
       <classpath path="javaforce.jar"/>
-      <classpath path="jna.jar"/>
       <classpath path="bouncycastle.jar"/>
     </javac>
   </target>
@@ -74,7 +65,7 @@
     <copy file="jphonelite.html" todir="/usr/share/jhelp"/>
   </target>
 
-  <target name="release-bin" depends="sign-jar" description="create release zip file">
+  <target name="release-bin" description="create release zip file">
     <zip destfile="jphonelite-${version}.zip">
       <fileset dir="..">
         <include name="jphonelite/*.jar"/>
@@ -88,7 +79,7 @@
       </fileset>
       <fileset dir="../.." includes="license.txt"/>
     </zip>
-    <move file="jphonelite-${version}.zip" todir="${user.home}/zips"/>
+    <move file="jphonelite-${version}.zip" todir="${home}/release"/>
   </target>
 
   <target name="release-src" depends="" description="create release zip file">
@@ -101,7 +92,6 @@
         <include name="jf/keys/build.xml"/>
 
         <include name="jf/jars/javaforce.jar"/>
-        <include name="jf/jars/jna.jar"/>
         <include name="jf/jars/bouncycastle.jar"/>
 
         <include name="jf/projects/jphonelite/src/*.java"/>
@@ -125,7 +115,7 @@
         <include name="jf/stubs/*"/>
       </fileset>
     </zip>
-    <move file="jphonelite-src-${version}.zip" todir="${user.home}/zips"/>
+    <move file="jphonelite-src-${version}.zip" todir="${home}/release"/>
   </target>
 
   <target name="javadoc" description="generate java documentation">

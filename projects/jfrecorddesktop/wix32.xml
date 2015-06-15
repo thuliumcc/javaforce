@@ -3,6 +3,7 @@
   <Product Id="*" UpgradeCode="{56317B62-FDB6-4314-A3EB-E7AD1F623217}" Version="0.3" Language="1033" Name="jfRecordDesktop" Manufacturer="Peter Quiring">
     <Package InstallerVersion="300" Compressed="yes"/>
     <Media Id="1" Cabinet="files.cab" EmbedCab="yes" />
+    <UIRef Id="WixUI_Minimal" />
 
     <Icon Id="icon.ico" SourceFile="jfrecorddesktop.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico"/>
@@ -23,9 +24,8 @@
       <Component Id="appfiles" Guid="{3BE06EFB-D219-4A6E-9B93-97BE48F7C50B}">
         <File Id="jfrecorddesktop.jar" Source="jfrecorddesktop.jar" KeyPath="yes"/>
         <File Id="javaforce.jar" Source="javaforce.jar"/>
-        <File Id="jna.jar" Source="jna.jar"/>
-        <File Id="jna_platform.jar" Source="jna-platform.jar"/>
         <File Id="jfrecorddesktop.exe" Source="jfrecorddesktop.exe"/>
+        <File Id="jfnative32.dll" Source="jfnative32.dll"/>
       </Component>
     </DirectoryRef>
 

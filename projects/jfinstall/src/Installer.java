@@ -8,12 +8,13 @@
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
-import jparted.IPanel;
 import javax.swing.*;
 
 import javaforce.*;
 import javaforce.jbus.*;
 import javaforce.linux.*;
+
+import jfparted.*;
 
 public class Installer extends javax.swing.JFrame {
 

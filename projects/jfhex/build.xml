@@ -55,7 +55,7 @@
       </fileset>
       <fileset dir="../.." includes="license.txt"/>
     </zip>
-    <move file="jfhex${version}.zip" todir="${user.home}/zips"/>
+    <move file="jfhex${version}.zip" todir="${home}/release"/>
   </target>
 
   <target name="clean" description="deletes compiled files">

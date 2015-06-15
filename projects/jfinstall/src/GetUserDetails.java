@@ -10,7 +10,7 @@ import java.util.*;
 
 import javaforce.*;
 
-import jparted.*;
+import jfparted.*;
 
 public class GetUserDetails extends IPanel {
 

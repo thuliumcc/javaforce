@@ -14,7 +14,6 @@ public class Settings {
   public static Settings current = new Settings();
 
   public int freq = 44100;  //recording freq
-  public boolean useNative = false;
   public int channels = 1;  //1=mono, 2=stereo, etc.
   public String input = "<default>", output = "<default>";  //devices
 

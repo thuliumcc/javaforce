@@ -66,7 +66,7 @@ public class Settings {
   public boolean autohold = false;  //auto hold/unhold when switching between active lines
   public int volPlaySW = 75, volRecSW = 75;  //playback / recording vol levels (software)
   public int volPlayHW = 100, volRecHW = 100;  //playback / recording vol levels (hardware) (obsolete - removed in 1.1.0)
-  public boolean nativeSound = false, nativeVideo = false;
+  public boolean nativeVideo = false;
   public int sipexpires = 3600;  //in seconds : min=300 (5mins) max=3600 (1hr)
   public boolean sipRange = false;  //specify SIP port range (min 32 ports)
   public int sipmin = 5061, sipmax = 5199;

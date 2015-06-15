@@ -13,10 +13,9 @@ import java.io.*;
 import java.util.*;
 import java.util.zip.*;
 
-import com.sun.jna.*;
-
 import javaforce.*;
-import javaforce.jna.*;
+import javaforce.jni.*;
+import javaforce.jni.lnx.*;
 
 public class jfusezip extends Fuse {
   private ZipFile zip;
@@ -41,7 +40,6 @@ public class jfusezip extends Fuse {
   }
 
   public void main2(String args[]) {
-    if (!init()) return;
     try {
       //auth first
       System.out.print("Password:");
@@ -50,13 +48,13 @@ public class jfusezip extends Fuse {
       if (!auth(args, pass)) throw new Exception("bad password");
       System.out.println("Ok");
       System.out.flush();
-      start(args);
+      LnxNative.fuse(args, this);
     } catch (Exception e) {
       JFLog.log("Error:" + e);
     }
   }
 
-  public int getattr(String path, Stat stat) {
+  public int getattr(String path, FuseStat stat) {
 //    JFLog.log("getattr:" + path);
     if (path.equals("/")) {
       stat.folder = true;
@@ -157,7 +155,7 @@ public class jfusezip extends Fuse {
     boolean canRead;
   }
 
-  public int open(String path, Pointer ffi) {
+  public int open(String path, int _mode, int fd) {
 //    JFLog.log("open:" + path);
     if (path.startsWith("/")) path = path.substring(1);
     try {
@@ -175,7 +173,7 @@ public class jfusezip extends Fuse {
         return -1;
       }
       fs.is = zip.getInputStream(ze);
-      attachObject(ffi, fs);
+      attachObject(fd, fs);
       return 0;
     } catch (Exception e) {
       JFLog.log(e);
@@ -183,9 +181,10 @@ public class jfusezip extends Fuse {
     }
   }
 
-  public int read(String path, Pointer buf, int size, long offset, Pointer ffi) {
+  public int read(String path, byte buf[], long offset, int fd) {
+    int size = buf.length;
 //    JFLog.log("read:" + path);
-    FileState fs = (FileState)getObject(ffi);
+    FileState fs = (FileState)getObject(fd);
     if (fs == null) {
 //      JFLog.log("no fs");
       return -1;
@@ -203,7 +202,7 @@ public class jfusezip extends Fuse {
         int left = size - read;
         int amt = fs.is.read(data, 0, left);
         if (amt <= 0) break;
-        buf.write(pos, data, 0, amt);
+        System.arraycopy(data, 0, buf, pos, amt);
         read += amt;
         pos += amt;
       }
@@ -216,16 +215,15 @@ public class jfusezip extends Fuse {
     }
   }
 
-  public int write(String path, Pointer buf, int size, long offset, Pointer ffi) {
+  public int write(String path, byte buf[], long offset, int fd) {
+    int size = buf.length;
 //    JFLog.log("write:" + path);
-    FileState fs = (FileState)getObject(ffi);
+    FileState fs = (FileState)getObject(fd);
     if (fs == null) return -1;
     if (!fs.canWrite) return -1;
-    byte data[] = new byte[size];
-    buf.read(0, data, 0, size);
     try {
       if (offset != fs.offset) return -1;
-      fs.os.write(data);
+      fs.os.write(buf);
       fs.offset += size;
       return size;
     } catch (Exception e) {
@@ -234,21 +232,22 @@ public class jfusezip extends Fuse {
     }
   }
 
-  public int statfs(String path, Pointer statvfs) {
+  public int statfs(String path) {
 //    JFLog.log("statfs:" + path);
     return -1;
   }
 
-  public int release(String path, Pointer ffi) {
-//    JFLog.log("release:" + path);
-    detachObject(ffi);
+  public int close(String path, int fd) {
+//    JFLog.log("close:" + path);
+    detachObject(fd);
     return 0;
   }
 
-  public int readdir(String path, Pointer buf, Pointer filler, Pointer ffi) {
+  public String[] readdir(String path) {
 //    JFLog.log("readdir:" + path);
     if (!path.endsWith("/")) path += "/";
     try {
+      ArrayList<String> dir = new ArrayList<String>();
       Enumeration e = zip.entries();
       while (e.hasMoreElements()) {
         ZipEntry ze = (ZipEntry)e.nextElement();
@@ -259,17 +258,17 @@ public class jfusezip extends Fuse {
 //        JFLog.log("file=" + name + ",path=" + filepath);
         if (!filepath.equals(path)) continue;
 //        JFLog.log("invokeFiller:" + name);
-        if (invokeFiller(filler, buf, name.substring(idx+1), null) == 1) break; //full???
+        dir.add(name.substring(idx+1));
       }
 //      JFLog.log("readdir done");
-      return 0;
+      return dir.toArray(new String[0]);
     } catch (Exception e) {
       JFLog.log(e);
-      return -1;
+      return null;
     }
   }
 
-  public int create(String path, int mode, Pointer ffi) {
+  public int create(String path, int mode, int fd) {
 //    JFLog.log("create:" + path);
     try {
       //TODO

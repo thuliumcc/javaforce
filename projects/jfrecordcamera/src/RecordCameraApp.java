@@ -8,7 +8,7 @@
 import java.awt.*;
 
 import javaforce.*;
-import javaforce.jna.*;
+import javaforce.media.*;
 
 public class RecordCameraApp extends javax.swing.JFrame {
 
@@ -56,9 +56,9 @@ public class RecordCameraApp extends javax.swing.JFrame {
    * @param args the command line arguments
    */
   public static void main(String args[]) {
-    if (!FFMPEG.init()) {
-      if (!FFMPEG.download()) return;
-      if (!FFMPEG.init()) return;  //try again after download
+    if (!MediaCoder.init()) {
+      if (!MediaCoder.download()) return;
+      if (!MediaCoder.init()) return;  //try again after download
     }
     /* Create and display the form */
     java.awt.EventQueue.invokeLater(new Runnable() {

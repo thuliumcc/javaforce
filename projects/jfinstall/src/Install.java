@@ -8,7 +8,7 @@
 import java.util.*;
 import java.io.*;
 
-import jparted.*;
+import jfparted.*;
 import javaforce.*;
 import javaforce.linux.*;
 

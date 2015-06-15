@@ -16,7 +16,7 @@
       <manifest>
         <attribute name="Trusted-Library" value="true"/>
         <attribute name="Permissions" value="all-permissions"/>
-        <attribute name="Codebase" value="jfaudio.sourceforge.net"/>
+        <attribute name="Codebase" value="jfarchive.sourceforge.net"/>
       </manifest>
     </jar>
   </target>

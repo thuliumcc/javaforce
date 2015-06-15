@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+6-9-2015 : v0.9
+  - added F9/F10 functions
+  - fixed F7/F8 shift right functions that were adding unwanted spacing
+
 2-9-2015 : v0.8
   - msi now registers txt file as a new file type (in explorer -> new -> Text Document) [ShellNew]
 

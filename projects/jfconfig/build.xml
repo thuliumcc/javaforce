@@ -11,17 +11,9 @@
 
   <import file="../../base.xml"/>
 
-  <target name="depjars">
+  <target name="depjars" depends="depnatives">
     <jar destfile="javaforce.jar">
       <zipfileset src="../../jars/javaforce.jar"/>
-      <manifest>
-        <attribute name="Trusted-Library" value="true"/>
-        <attribute name="Permissions" value="all-permissions"/>
-        <attribute name="Codebase" value="javaforce.sourceforge.net"/>
-      </manifest>
-    </jar>
-    <jar destfile="jna.jar">
-      <zipfileset src="../../jars/jna.jar"/>
       <manifest>
         <attribute name="Trusted-Library" value="true"/>
         <attribute name="Permissions" value="all-permissions"/>
@@ -46,7 +38,7 @@
 
   <target name="jar" depends="compile" description="build jar file">
     <!-- Build jar file from class files -->
-    <jar destfile="jconfig.jar" includes="**/*.class" basedir="${build}">
+    <jar destfile="jfconfig.jar" includes="**/*.class" basedir="${build}">
       <fileset dir="src" includes="**/*.png"/>
       <fileset dir="." includes="*.conf"/>
       <fileset dir="." includes="*.cnf"/>
@@ -63,12 +55,12 @@
 
     <elf app="${app2}"/>
 
-    <copy file="jconfig.jar" todir="/usr/share/java"/>
-    <copy file="jconfig.desktop" todir="/usr/share/applications"/>
-    <copy file="jconfig.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
-    <copy file="jconfig.html" todir="/usr/share/jhelp"/>
-    <copy file="jconfig-samba.html" todir="/usr/share/jhelp"/>
-    <copy file="jopenssl.html" todir="/usr/share/jhelp"/>
+    <copy file="jfconfig.jar" todir="/usr/share/java"/>
+    <copy file="jfconfig.desktop" todir="/usr/share/applications"/>
+    <copy file="jfconfig.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jfconfig.html" todir="/usr/share/jhelp"/>
+    <copy file="jfconfig-samba.html" todir="/usr/share/jhelp"/>
+    <copy file="jfopenssl.html" todir="/usr/share/jhelp"/>
   </target>
 
   <target name="clean" description="deletes compiled files">

@@ -22,7 +22,7 @@ public class CalendarWindow extends javax.swing.JWindow {
     super();
     initComponents();
     x11id = Linux.x11_get_id(this);
-    JFLog.log("Calendar.window=0x" + Integer.toString(JF.atoi(x11id.toString()), 16));
+    JFLog.log("Calendar.window=0x" + Long.toString(x11id, 16));
     try {
       Linux.x11_set_dock(x11id);
     } catch (Throwable t) {
@@ -222,7 +222,7 @@ public class CalendarWindow extends javax.swing.JWindow {
     // End of variables declaration//GEN-END:variables
 
   private int year = -1, month = -1, day = -1;
-  private Object x11id;
+  private long x11id;
 
   private void buildCalendar(boolean today) {
     DefaultTableModel model = (DefaultTableModel)cal.getModel();

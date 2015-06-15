@@ -1,2 +1,2 @@
 @echo off
-java -cp javaforce.jar;jna.jar;jfqemu.jar jfqemu.QEMUApp %*
+java -cp javaforce.jar;jfqemu.jar jfqemu.QEMUApp %*

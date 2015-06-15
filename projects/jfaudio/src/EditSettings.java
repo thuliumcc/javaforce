@@ -17,7 +17,6 @@ public class EditSettings extends javax.swing.JDialog {
     super(parent, modal);
     initComponents();
     rateField.setSelectedItem("" + Settings.current.freq);
-    useNative.setSelected(Settings.current.useNative);
     channels.setSelectedIndex(Settings.current.channels - 1);
     listInputDevices();
     listOutputDevices();
@@ -41,7 +40,6 @@ public class EditSettings extends javax.swing.JDialog {
     inputDevice = new javax.swing.JComboBox();
     jLabel3 = new javax.swing.JLabel();
     outputDevice = new javax.swing.JComboBox();
-    useNative = new javax.swing.JCheckBox();
     jLabel4 = new javax.swing.JLabel();
     channels = new javax.swing.JComboBox();
 
@@ -71,13 +69,6 @@ public class EditSettings extends javax.swing.JDialog {
 
     jLabel3.setText("Playback Device:");
 
-    useNative.setText("Use Native Sound (Improved Latency)");
-    useNative.addItemListener(new java.awt.event.ItemListener() {
-      public void itemStateChanged(java.awt.event.ItemEvent evt) {
-        useNativeItemStateChanged(evt);
-      }
-    });
-
     jLabel4.setText("Recording Channels:");
 
     channels.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "mono", "stereo" }));
@@ -102,19 +93,15 @@ public class EditSettings extends javax.swing.JDialog {
             .addComponent(jLabel2)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(inputDevice, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-          .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-              .addComponent(jLabel4)
-              .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-              .addComponent(channels, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-              .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                  .addComponent(jLabel1)
-                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                  .addComponent(rateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addComponent(useNative))
-              .addGap(0, 0, Short.MAX_VALUE))))
+          .addGroup(layout.createSequentialGroup()
+            .addComponent(jLabel4)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(channels, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+          .addGroup(layout.createSequentialGroup()
+            .addComponent(jLabel1)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(rateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(0, 29, Short.MAX_VALUE)))
         .addContainerGap())
     );
     layout.setVerticalGroup(
@@ -124,9 +111,7 @@ public class EditSettings extends javax.swing.JDialog {
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jLabel1)
           .addComponent(rateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-        .addComponent(useNative)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addGap(32, 32, 32)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jLabel4)
           .addComponent(channels, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -153,7 +138,6 @@ public class EditSettings extends javax.swing.JDialog {
     if (rate < 8000) rate = 8000;
     if (rate > 96000) rate = 96000;
     Settings.current.freq = rate;
-    Settings.current.useNative = useNative.isSelected();
     Settings.current.channels = channels.getSelectedIndex() + 1;
     Settings.current.input = (String)inputDevice.getSelectedItem();
 //    JFLog.log("input=" + Settings.current.input);
@@ -167,11 +151,6 @@ public class EditSettings extends javax.swing.JDialog {
     dispose();
   }//GEN-LAST:event_cancelActionPerformed
 
-  private void useNativeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_useNativeItemStateChanged
-    listInputDevices();
-    listOutputDevices();
-  }//GEN-LAST:event_useNativeItemStateChanged
-
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton cancel;
   private javax.swing.JComboBox channels;
@@ -183,11 +162,10 @@ public class EditSettings extends javax.swing.JDialog {
   private javax.swing.JButton ok;
   private javax.swing.JComboBox outputDevice;
   private javax.swing.JComboBox rateField;
-  private javax.swing.JCheckBox useNative;
   // End of variables declaration//GEN-END:variables
 
   private void listOutputDevices() {
-    Sound.Output output = Sound.getOutput(useNative.isSelected());
+    AudioOutput output = new AudioOutput();
     String devices[] = output.listDevices();
     int idx = -1;
     outputDevice.removeAllItems();
@@ -206,7 +184,7 @@ public class EditSettings extends javax.swing.JDialog {
   }
 
   private void listInputDevices() {
-    Sound.Input input = Sound.getInput(useNative.isSelected());
+    AudioInput input = new AudioInput();
     String devices[] = input.listDevices();
     int idx = -1;
     inputDevice.removeAllItems();
