@@ -1,7 +1,7 @@
 <project name="javaforce-release" default="zip" basedir=".">
   <description>JavaForce release script</description>
 
-  <property name="VERSION" value="9.0.0"/>
+  <property name="VERSION" value="9.1.0"/>
   <property name="URL" value="http://javaforce.sourceforge.net"/>
   <property name="EMAIL" value="pquiring@gmail.com"/>
 
@@ -88,6 +88,7 @@
         <exclude name="**/*.res"/>
         <exclude name="**/*.msi"/>
         <exclude name="**/*.exe"/>
+        <exclude name="**/*.stackdump"/>
         <exclude name="**/*.apk"/>
         <exclude name="**/*.ap_"/>
         <exclude name="**/*.dex"/>

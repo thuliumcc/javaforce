@@ -5,7 +5,7 @@
   <property name="home" location="../.."/>
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
-  <property name="version" value="1.9.4"/>
+  <property name="version" value="1.9.5"/>
 
   <import file="../../base.xml"/>
 
@@ -76,6 +76,7 @@
         <include name="jphonelite/readme.txt"/>
         <include name="jphonelite/jphonelite"/>
         <include name="jphonelite/run.*"/>
+        <include name="jphonelite/jfnative*"/>
       </fileset>
       <fileset dir="../.." includes="license.txt"/>
     </zip>

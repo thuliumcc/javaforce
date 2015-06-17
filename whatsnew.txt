@@ -1,5 +1,21 @@
 What's new...
 
+Jun 15/2015 : JF 9.1.0 released!
+  - fixed win32 native issues
+  - fixed javaforce.gl.GLObject crashing on some video cards
+    - needed to disable vertex attrib array for UVMap2 if not in use
+    - projects/jftest3d works on more systems now
+  - added GL.glTexSubImage2D() function
+  - added GL.glDisableVertexAttrib() function
+  - fixed VoIP : could not handle realm with a space
+    - created a String.split() replacement that can handle "quotes" and trim()s each substring
+  - fixed VoIP codec selection (see javaforce.voip.RTPChannel.start())
+  - jPhoneLite/1.9.5 released!
+    - fixes for bug #27
+  - jfrecordcamera/0.3 and jfrecorddesktop/0.4 and jfvideo/0.18 released!
+    - added new higher video bit rates
+  - javaforce is now available on github.com/pquiring/javaforce
+
 Jun 9/2015 : JF 9.0.0 released!
   - after spending years working with JNA I've decided to switch back to JNI.
     - JNA uses libffi which is too complex and VERY slow.
